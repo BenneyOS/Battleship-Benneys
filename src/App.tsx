@@ -8,6 +8,7 @@ import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
 import { setupProgress, fleetProgress } from './engine/selectors';
 import type { FleetDef } from './engine/selectors';
+import './App.css';
 
 const FLEET_DEF: FleetDef[] = FLEET.map((length, i) => ({
   name: SHIP_NAMES[i],
@@ -59,156 +60,173 @@ function App() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#0d1b2a',
-        color: '#ecf0f1',
-        fontFamily: "'Segoe UI', system-ui, sans-serif",
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '20px',
-      }}
-    >
-      <h1 style={{ fontSize: 28, margin: '0 0 4px', letterSpacing: 2 }}>
-        BATTLESHIP
-      </h1>
-      <p style={{ color: '#7f8c8d', margin: '0 0 16px', fontSize: 13 }}>
-        Benney's Edition
-      </p>
+    <div className="game-layout">
+      {/* ===== CENTRAL HEADER BAR ===== */}
+      <header className="zone-header" data-testid="zone-header">
+        <h1 style={{ fontSize: 28, margin: '0 0 4px', letterSpacing: 2 }}>
+          BATTLESHIP
+        </h1>
+        <p style={{ color: '#7f8c8d', margin: '0 0 12px', fontSize: 13 }}>
+          Benney's Edition
+        </p>
 
-      {/* Turn Banner — visible during play */}
-      <TurnBanner
-        turn={turn}
-        aiPhase={aiPhase}
-        aiAnnouncement={aiAnnouncement}
-        gamePhase={state.game.phase}
-      />
+        {/* Turn Banner */}
+        <TurnBanner
+          turn={turn}
+          aiPhase={aiPhase}
+          aiAnnouncement={aiAnnouncement}
+          gamePhase={state.game.phase}
+        />
 
-      {/* Setup Progress Bar */}
-      {isSetup && <SetupProgress progress={setupProg} />}
+        {/* AI Announcement — aria-live for screen readers */}
+        {aiAnnouncement && (
+          <div
+            aria-live="polite"
+            style={{
+              backgroundColor: '#2c1a1a',
+              padding: '8px 18px',
+              borderRadius: 6,
+              marginTop: 8,
+              fontSize: 14,
+              color: '#e74c3c',
+              fontWeight: 500,
+              border: '1px solid #e74c3c',
+            }}
+          >
+            {aiAnnouncement}
+          </div>
+        )}
 
-      {/* Battle Scoreboard */}
-      {(isPlaying || isGameOver) && (
-        <BattleScoreboard progress={battleProg} milestoneMessage={milestoneMessage} />
-      )}
-
-      {/* Message area */}
-      <div
-        style={{
-          backgroundColor: '#1b2838',
-          padding: '10px 24px',
-          borderRadius: 8,
-          marginBottom: 16,
-          fontSize: 15,
-          maxWidth: 600,
-          textAlign: 'center',
-        }}
-      >
-        {message}
-      </div>
-
-      {/* AI Announcement — aria-live for screen readers */}
-      {aiAnnouncement && (
+        {/* Message area */}
         <div
-          aria-live="polite"
           style={{
-            backgroundColor: '#2c1a1a',
-            padding: '8px 18px',
-            borderRadius: 6,
-            marginBottom: 12,
+            backgroundColor: '#1b2838',
+            padding: '8px 20px',
+            borderRadius: 8,
+            marginTop: 8,
             fontSize: 14,
-            color: '#e74c3c',
-            fontWeight: 500,
-            border: '1px solid #e74c3c',
+            maxWidth: 600,
+            textAlign: 'center',
           }}
         >
-          {aiAnnouncement}
+          {message}
         </div>
-      )}
 
-      {isSetup && (
-        <div style={{ marginBottom: 12, display: 'flex', gap: 10 }}>
-          <button
-            onClick={actions.autoPlaceHumanFleet}
-            style={buttonStyle}
-          >
-            Auto-Place Ships
-          </button>
-          {allShipsPlaced && (
-            <button onClick={actions.startPlaying} style={buttonStylePrimary}>
-              Start Game
-            </button>
-          )}
-          {!allShipsPlaced && (
-            <span style={{ color: '#95a5a6', fontSize: 13, lineHeight: '36px' }}>
-              Orientation: <strong>{orientation}</strong> (press R to toggle)
-            </span>
-          )}
-        </div>
-      )}
-
-      {isGameOver && (
-        <button onClick={actions.reset} style={buttonStylePrimary}>
-          New Game
-        </button>
-      )}
-
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: 24,
-          marginTop: 8,
-        }}
-      >
-        <BoardGrid
-          board={state.game.humanBoard}
-          showShips={true}
-          onClick={isSetup && !allShipsPlaced ? handleSetupClick : undefined}
-          label="Your Fleet"
-          interactive={isSetup && !allShipsPlaced}
-          highlightedCell={highlightedCell}
-        />
-
-        <BoardGrid
-          board={state.game.aiBoard}
-          showShips={false}
-          onClick={enemyGridInteractive ? actions.fire : undefined}
-          label="Enemy Waters"
-          interactive={enemyGridInteractive}
-        />
-      </div>
-
-      {isSetup && (
-        <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {FLEET.map((length, i) => (
-            <div
-              key={i}
-              style={{
-                padding: '4px 12px',
-                borderRadius: 4,
-                backgroundColor: i < placementIndex ? '#27ae60' : i === placementIndex ? '#2e86c1' : '#2c3e50',
-                fontSize: 13,
-                color: '#ecf0f1',
-              }}
+        {/* Setup controls in header */}
+        {isSetup && (
+          <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              onClick={actions.autoPlaceHumanFleet}
+              style={buttonStyle}
             >
-              {SHIP_NAMES[i]} ({length})
-              {i < placementIndex ? ' \u2713' : ''}
-            </div>
-          ))}
-        </div>
-      )}
+              Auto-Place Ships
+            </button>
+            {allShipsPlaced && (
+              <button onClick={actions.startPlaying} style={buttonStylePrimary}>
+                Start Game
+              </button>
+            )}
+            {!allShipsPlaced && (
+              <span style={{ color: '#95a5a6', fontSize: 13, lineHeight: '36px' }}>
+                Orientation: <strong>{orientation}</strong> (press R to toggle)
+              </span>
+            )}
+          </div>
+        )}
 
+        {isGameOver && (
+          <button onClick={actions.reset} style={{ ...buttonStylePrimary, marginTop: 10 }}>
+            New Game
+          </button>
+        )}
+      </header>
+
+      {/* ===== PLAYER ZONE (LEFT) ===== */}
+      <section className="zone-player" data-testid="zone-player">
+        <div className="zone-label">
+          <span>&#9875;</span> Your Side
+        </div>
+
+        <div className="board-container">
+          <BoardGrid
+            board={state.game.humanBoard}
+            showShips={true}
+            onClick={isSetup && !allShipsPlaced ? handleSetupClick : undefined}
+            label="Your Fleet"
+            interactive={isSetup && !allShipsPlaced}
+            highlightedCell={highlightedCell}
+          />
+        </div>
+
+        {/* Setup Progress Bar — player's fleet readout */}
+        {isSetup && <SetupProgress progress={setupProg} />}
+
+        {/* Ship placement queue during setup */}
+        {isSetup && (
+          <div style={{ marginTop: 12, display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {FLEET.map((length, i) => (
+              <div
+                key={i}
+                style={{
+                  padding: '3px 10px',
+                  borderRadius: 4,
+                  backgroundColor: i < placementIndex ? '#27ae60' : i === placementIndex ? '#2e86c1' : '#2c3e50',
+                  fontSize: 12,
+                  color: '#ecf0f1',
+                }}
+              >
+                {SHIP_NAMES[i]} ({length})
+                {i < placementIndex ? ' \u2713' : ''}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Player fleet damage during play */}
+        {(isPlaying || isGameOver) && (
+          <div style={{ marginTop: 12, fontSize: 13, color: '#95a5a6', textAlign: 'center' }}>
+            Your fleet: {state.game.humanBoard.ships.filter((s) => {
+              const cells = Array.from({ length: s.length }, (_, i) =>
+                s.orientation === 'horizontal'
+                  ? `${s.origin.x + i},${s.origin.y}`
+                  : `${s.origin.x},${s.origin.y + i}`
+              );
+              return cells.every((c) => state.game.humanBoard.shots.has(c));
+            }).length} lost
+          </div>
+        )}
+      </section>
+
+      {/* ===== ENEMY ZONE (RIGHT) ===== */}
+      <section className="zone-enemy" data-testid="zone-enemy">
+        <div className="zone-label">
+          <span>&#127919;</span> Enemy Side
+        </div>
+
+        <div className="board-container">
+          <BoardGrid
+            board={state.game.aiBoard}
+            showShips={false}
+            onClick={enemyGridInteractive ? actions.fire : undefined}
+            label="Enemy Waters"
+            interactive={enemyGridInteractive}
+          />
+        </div>
+
+        {/* Battle Scoreboard — enemy fleet damage */}
+        {(isPlaying || isGameOver) && (
+          <BattleScoreboard progress={battleProg} milestoneMessage={milestoneMessage} />
+        )}
+      </section>
+
+      {/* Legend — below the grid zones */}
       {(isPlaying || isGameOver) && (
-        <div style={{ marginTop: 16, fontSize: 12, color: '#7f8c8d' }}>
-          <span style={{ marginRight: 16 }}>
+        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '12px 0', gap: 16, fontSize: 12, color: '#7f8c8d' }}>
+          <span>
             <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#3a4a5a', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }} />
             Miss
           </span>
-          <span style={{ marginRight: 16 }}>
+          <span>
             <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#c0392b', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }} />
             Hit
           </span>
