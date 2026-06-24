@@ -14,7 +14,7 @@ describe('Placement preview interaction (§6.2)', () => {
   // jsdom has 'ontouchstart' in window by default, which makes our code
   // think it's a touch device. Delete it for desktop tests.
   function forceDesktop() {
-    delete (window as Record<string, unknown>).ontouchstart;
+    delete (window as unknown as Record<string, unknown>).ontouchstart;
   }
 
   it('hovering a cell shows preview cells with valid color', () => {
@@ -144,7 +144,7 @@ describe('Placement preview interaction (§6.2)', () => {
     fireEvent.click(cell0_0!);
     expect(screen.getByText(/1 of 5/)).toBeTruthy();
 
-    delete (window as Record<string, unknown>).ontouchstart;
+    delete (window as unknown as Record<string, unknown>).ontouchstart;
   });
 
   it('touch: different cell relocates without committing', () => {
@@ -163,6 +163,6 @@ describe('Placement preview interaction (§6.2)', () => {
     fireEvent.click(cell0_2!);
     expect(screen.getByText(/0 of 5/)).toBeTruthy();
 
-    delete (window as Record<string, unknown>).ontouchstart;
+    delete (window as unknown as Record<string, unknown>).ontouchstart;
   });
 });
