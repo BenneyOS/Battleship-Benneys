@@ -304,23 +304,18 @@ function App() {
           />
         </div>
 
-        {/* Companion panel: setup progress */}
+        {/* ── Setup controls: grouped by role & weight ─────────── */}
         {isSetup && (
-          <div className="companion-panel" data-testid="player-companion-panel">
+          <div className="companion-panel setup-controls__status" data-testid="player-companion-panel">
             <SetupProgress progress={setupProg} />
-            {/* Ship placement queue */}
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginTop: 8 }}>
+            <div className="setup-controls__roster">
               {FLEET.map((length, i) => (
                 <div
                   key={i}
-                  style={{
-                    padding: '3px 10px',
-                    borderRadius: 4,
-                    backgroundColor: i < placementIndex ? 'var(--success)' : i === placementIndex ? 'var(--side-player)' : 'var(--board-bg)',
-                    fontSize: 12,
-                    fontFamily: 'var(--font-body)',
-                    color: 'var(--text-primary)',
-                  }}
+                  className={`setup-controls__ship-chip${
+                    i < placementIndex ? ' setup-controls__ship-chip--placed' :
+                    i === placementIndex ? ' setup-controls__ship-chip--active' : ''
+                  }`}
                 >
                   {SHIP_NAMES[i]} ({length})
                   {i < placementIndex ? ' \u2713' : ''}
@@ -330,25 +325,36 @@ function App() {
           </div>
         )}
 
-        {/* Anchored CTAs: bottom of setup zone */}
-        {isSetup && (
-          <div className="setup-cta-zone">
-            {!allShipsPlaced && (
-              <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', fontSize: 13 }}>
-                Orientation: <strong>{orientation}</strong> (press R to toggle)
-              </span>
-            )}
+        {/* Placement tools (clustered near board): orientation + Auto-Place */}
+        {isSetup && !allShipsPlaced && (
+          <div className="setup-controls__tools">
+            <button
+              type="button"
+              className="btn-rotate"
+              data-testid="rotate-button"
+              onClick={() => setOrientation((o) => (o === 'horizontal' ? 'vertical' : 'horizontal'))}
+              aria-label={`Rotate to ${orientation === 'horizontal' ? 'vertical' : 'horizontal'}`}
+            >
+              <span className="btn-rotate__icon" aria-hidden="true">↻</span>
+              <span className="btn-rotate__label">{orientation === 'horizontal' ? 'Horizontal' : 'Vertical'}</span>
+              <span className="btn-rotate__hint">R</span>
+            </button>
             <button
               onClick={actions.autoPlaceHumanFleet}
               className="btn-secondary"
             >
               Auto-Place Ships
             </button>
+          </div>
+        )}
+
+        {/* Terminal action (loudest): Start Battle alone, separated */}
+        {isSetup && (
+          <div className="setup-controls__action">
             <button
               onClick={handleStartBattle}
               disabled={!allShipsPlaced}
               className="btn-primary btn-start-game"
-              style={{ borderRadius: 6 }}
             >
               Start Battle
             </button>
