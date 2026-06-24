@@ -9,13 +9,13 @@ import { EnemyFleetChecklist } from './ui/components/EnemyFleetChecklist';
 import { AccuracyChip } from './ui/components/AccuracyChip';
 import { MuteButton } from './ui/components/MuteButton';
 import { SinkCelebration } from './ui/components/SinkCelebration';
+import { LogoHeader } from './ui/components/LogoHeader';
 import { deriveHeaderStatus } from './ui/headerStatus';
 import { deriveSinkCelebration } from './ui/sinkCelebration';
 import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
 import { setupProgress, fleetProgress, playerAccuracy, previewPlacement, enemyFleetStatus } from './engine/selectors';
 import type { FleetDef, PreviewResult } from './engine/selectors';
-import logoSrc from './assets/logo.png';
 import './App.css';
 
 const FLEET_DEF: FleetDef[] = FLEET.map((length, i) => ({
@@ -144,14 +144,8 @@ function App() {
 
       {/* ===== CENTRAL HEADER BAR ===== */}
       <header className="zone-header" data-testid="zone-header">
-        <div className="logo-header">
-          <img
-            src={logoSrc}
-            alt="Benny's Battleship"
-            className="logo-header__img"
-            data-testid="logo-header"
-          />
-        </div>
+        {/* CSS/HTML Logo — no raster image */}
+        <LogoHeader />
 
         {/* PRIMARY: Turn Banner (non-interactive, animated handoff) */}
         <TurnBanner
@@ -183,7 +177,7 @@ function App() {
               </button>
             )}
             {!allShipsPlaced && (
-              <span style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: '36px' }}>
+              <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: '36px' }}>
                 Orientation: <strong>{orientation}</strong> (press R to toggle)
               </span>
             )}
@@ -234,8 +228,9 @@ function App() {
                   style={{
                     padding: '3px 10px',
                     borderRadius: 4,
-                    backgroundColor: i < placementIndex ? 'var(--success)' : i === placementIndex ? 'var(--side-player)' : 'var(--surface-1)',
+                    backgroundColor: i < placementIndex ? 'var(--success)' : i === placementIndex ? 'var(--side-player)' : 'var(--board-bg)',
                     fontSize: 12,
+                    fontFamily: 'var(--font-body)',
                     color: 'var(--text-primary)',
                   }}
                 >
@@ -250,7 +245,7 @@ function App() {
         {/* Companion panel: player fleet damage during play */}
         {(isPlaying || isGameOver) && (
           <div className="companion-panel" data-testid="player-companion-panel">
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center' }}>
+            <div style={{ fontSize: 13, fontFamily: 'var(--font-body)', color: 'var(--text-secondary)', textAlign: 'center' }}>
               Your fleet: {state.game.humanBoard.ships.filter((s) => {
                 const cells = Array.from({ length: s.length }, (_, i) =>
                   s.orientation === 'horizontal'
@@ -291,17 +286,17 @@ function App() {
 
       {/* Legend — below the grid zones */}
       {(isPlaying || isGameOver) && (
-        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '12px 0', gap: 16, fontSize: 12, color: 'var(--text-muted)', position: 'relative', zIndex: 1 }}>
+        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '12px 0', gap: 16, fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-muted)', position: 'relative', zIndex: 1 }}>
           <span>
             <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-miss)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)' }} />
             Miss
           </span>
           <span>
-            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-hit)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)' }} />
+            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-hit)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)', boxShadow: '0 0 6px var(--state-hit)' }} />
             Hit
           </span>
           <span>
-            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-sunk)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)' }}>
+            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-sunk)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)', boxShadow: '0 0 6px var(--state-sunk)' }}>
               <span style={{ fontSize: 10, lineHeight: '14px', display: 'block', textAlign: 'center' }}>☠</span>
             </span>
             Sunk
@@ -318,20 +313,21 @@ function App() {
 const buttonStyleSecondary: React.CSSProperties = {
   padding: '8px 18px',
   fontSize: 14,
-  border: '1px solid var(--surface-edge, #2a5070)',
+  fontFamily: 'var(--font-body)',
+  border: '1px solid var(--surface-edge)',
   borderRadius: 6,
-  backgroundColor: 'var(--surface-1, #162d46)',
-  color: 'var(--text-primary, #ecf0f1)',
+  backgroundColor: 'var(--board-bg)',
+  color: 'var(--text-primary)',
   cursor: 'pointer',
 };
 
 const buttonStylePrimary: React.CSSProperties = {
   ...buttonStyleSecondary,
-  backgroundColor: 'var(--accent-warm, #e8872e)',
-  borderColor: 'var(--accent-warm, #e8872e)',
+  backgroundColor: 'var(--warm-cta)',
+  borderColor: 'var(--warm-cta)',
   fontWeight: 600,
-  color: '#ffffff',
-  boxShadow: '0 0 12px rgba(232, 135, 46, 0.3)',
+  color: 'var(--text-primary)',
+  boxShadow: '0 0 15px rgba(255, 143, 0, 0.35)',
 };
 
 export default App;

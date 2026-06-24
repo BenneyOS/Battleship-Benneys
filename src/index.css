@@ -8,8 +8,8 @@
 
 body {
   margin: 0;
-  background-color: var(--surface-0, #0e2233);
-  color: var(--text-primary, #ecf0f1);
+  background-color: var(--surface-0, #0f3460);
+  color: var(--text-primary, #ffffff);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

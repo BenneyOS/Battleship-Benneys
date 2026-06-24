@@ -108,8 +108,9 @@ describe('§6.6 Component / UI smoke tests', () => {
       };
       render(<BattleScoreboard progress={progress} milestoneMessage={null} />);
       expect(screen.getByText(/2 of 5/)).toBeInTheDocument();
-      expect(screen.getByText(/3 more to go/)).toBeInTheDocument();
-      expect(screen.getByText(/40% of the enemy fleet destroyed/)).toBeInTheDocument();
+      // Redundant "N more to go" and "N% destroyed" text removed — bar suffices
+      expect(screen.queryByText(/more to go/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/% of the enemy fleet destroyed/)).not.toBeInTheDocument();
     });
 
     it('renders progress bar at correct width', () => {

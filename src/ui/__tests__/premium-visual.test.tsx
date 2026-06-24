@@ -1,5 +1,5 @@
 /**
- * Premium Visual System verification tests (PRD §6.1-6.4).
+ * Premium Visual System verification tests (Bright Arcade PRD §5–6).
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach } from 'vitest';
@@ -18,8 +18,8 @@ function startGame() {
   fireEvent.click(screen.getByText('Start Game'));
 }
 
-/* ── §6.1 Token & contrast checks ────────────────────────────── */
-describe('§6.1 Token system & contrast', () => {
+/* ── §5.1 Token & contrast checks ────────────────────────────── */
+describe('§5.1 Token system & contrast', () => {
   it('App.css defines all required token custom properties', () => {
     const css = fs.readFileSync(
       path.resolve(__dirname, '../../App.css'),
@@ -40,6 +40,14 @@ describe('§6.1 Token system & contrast', () => {
       '--text-primary',
       '--text-secondary',
       '--text-muted',
+      '--neon-cyan',
+      '--gold',
+      '--warm-cta',
+      '--field-top',
+      '--field-mid',
+      '--field-deep',
+      '--font-display',
+      '--font-body',
     ];
     for (const token of requiredTokens) {
       expect(css).toContain(token);
@@ -67,6 +75,32 @@ describe('§6.1 Token system & contrast', () => {
     expect(s0).not.toBe(s2);
   });
 
+  it('elevation steps have meaningful tonal separation (>= 10 lightness units)', () => {
+    const css = fs.readFileSync(
+      path.resolve(__dirname, '../../App.css'),
+      'utf-8',
+    );
+    const extract = (token: string) => {
+      const re = new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*(#[0-9a-fA-F]{6})`);
+      const m = css.match(re);
+      return m ? m[1].toLowerCase() : null;
+    };
+    const hexToLightness = (hex: string) => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
+    };
+    const s0 = extract('--surface-0')!;
+    const s1 = extract('--surface-1')!;
+    const s2 = extract('--surface-2')!;
+    const l0 = hexToLightness(s0);
+    const l1 = hexToLightness(s1);
+    const l2 = hexToLightness(s2);
+    expect(l1 - l0).toBeGreaterThanOrEqual(10);
+    expect(l2 - l1).toBeGreaterThanOrEqual(10);
+  });
+
   it('combat state tokens are mutually distinct', () => {
     const css = fs.readFileSync(
       path.resolve(__dirname, '../../App.css'),
@@ -88,24 +122,45 @@ describe('§6.1 Token system & contrast', () => {
     expect(miss).not.toBe(sunk);
   });
 
+  it('hit and CTA are distinct tokens', () => {
+    const css = fs.readFileSync(
+      path.resolve(__dirname, '../../App.css'),
+      'utf-8',
+    );
+    const extract = (token: string) => {
+      const re = new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*(#[0-9a-fA-F]{6})`);
+      const m = css.match(re);
+      return m ? m[1].toLowerCase() : null;
+    };
+    const hit = extract('--state-hit');
+    const cta = extract('--warm-cta');
+    expect(hit).not.toBeNull();
+    expect(cta).not.toBeNull();
+    expect(hit).not.toBe(cta);
+  });
+
+  it('no surviving dark-theme hex values (#0A192F/#112240)', () => {
+    const css = fs.readFileSync(
+      path.resolve(__dirname, '../../App.css'),
+      'utf-8',
+    );
+    expect(css.toLowerCase()).not.toContain('#0a192f');
+    expect(css.toLowerCase()).not.toContain('#112240');
+  });
+
   it('no hardcoded hex colors in component files (BoardGrid, TurnBanner, AccuracyChip)', () => {
     const files = [
       path.resolve(__dirname, '../components/BoardGrid.tsx'),
       path.resolve(__dirname, '../components/TurnBanner.tsx'),
       path.resolve(__dirname, '../components/AccuracyChip.tsx'),
     ];
-    // Pattern: bare hex color like '#abc123' or '#AABBCC' in a style context
-    // Exempting comments and data attributes
     for (const f of files) {
       const src = fs.readFileSync(f, 'utf-8');
       const lines = src.split('\n');
       for (const line of lines) {
-        // Skip comments
         if (line.trim().startsWith('//') || line.trim().startsWith('*')) continue;
-        // Check for hardcoded hex in style-related contexts
         const hexInStyle = line.match(/(?:color|background|border|shadow|fill|stroke)\s*[:=]\s*['"]#[0-9a-fA-F]{3,8}['"]/g);
         if (hexInStyle) {
-          // Allow fallback hex inside var() calls
           const varPattern = /var\([^)]*#[0-9a-fA-F]{3,8}[^)]*\)/;
           if (!varPattern.test(line)) {
             expect.fail(`Hardcoded hex color in ${path.basename(f)}: ${line.trim()}`);
@@ -116,41 +171,79 @@ describe('§6.1 Token system & contrast', () => {
   });
 });
 
-/* ── §6.2 Logo / header structural checks ────────────────────── */
-describe('§6.2 Logo / header structure', () => {
-  it('logo renders with correct alt text', () => {
-    render(<App />);
-    const logo = screen.getByAltText("Benny's Battleship");
-    expect(logo).toBeInTheDocument();
-    expect(logo.tagName).toBe('IMG');
-  });
-
-  it('plain-text "BATTLESHIP" title is removed', () => {
-    render(<App />);
-    expect(screen.queryByText('BATTLESHIP')).not.toBeInTheDocument();
-  });
-
-  it("plain-text \"Benney's Edition\" subtitle is removed", () => {
-    render(<App />);
-    expect(screen.queryByText("Benney's Edition")).not.toBeInTheDocument();
-  });
-
-  it('logo element has data-testid for targeting', () => {
+/* ── §5.2 Logo checks — CSS/HTML text, no raster ─────────────── */
+describe('§5.2 Logo / header structure (CSS rebuild)', () => {
+  it('logo lockup renders with accessible name', () => {
     render(<App />);
     const logo = screen.getByTestId('logo-header');
     expect(logo).toBeInTheDocument();
-    expect(logo.tagName).toBe('IMG');
+    expect(logo.getAttribute('aria-label')).toBe("Benny's Battleship");
   });
 
-  it('logo image has responsive CSS class', () => {
+  it('no raster logo asset is referenced (no IMG tag in logo)', () => {
     render(<App />);
     const logo = screen.getByTestId('logo-header');
-    expect(logo.className).toContain('logo-header__img');
+    expect(logo.querySelector('img')).toBeNull();
+  });
+
+  it('logo contains BATTLESHIP text', () => {
+    render(<App />);
+    const logo = screen.getByTestId('logo-header');
+    const battleshipText = logo.querySelector('.logo-lockup__battleship');
+    expect(battleshipText).not.toBeNull();
+    expect(battleshipText!.textContent).toContain('Battleship');
+  });
+
+  it("logo contains BENNY'S text", () => {
+    render(<App />);
+    expect(screen.getByText(/Benny/i)).toBeInTheDocument();
+  });
+
+  it('logo has data-testid for targeting', () => {
+    render(<App />);
+    const logo = screen.getByTestId('logo-header');
+    expect(logo).toBeInTheDocument();
+    expect(logo.className).toContain('logo-lockup');
+  });
+
+  it('no raster logo PNG exists in assets', () => {
+    const assetDir = path.resolve(__dirname, '../../assets');
+    const files = fs.existsSync(assetDir) ? fs.readdirSync(assetDir) : [];
+    expect(files).not.toContain('logo.png');
   });
 });
 
-/* ── §6.3 Atmosphere checks ──────────────────────────────────── */
-describe('§6.3 Atmosphere', () => {
+/* ── §5.3 Typography checks ──────────────────────────────────── */
+describe('§5.3 Typography', () => {
+  it('CSS declares arcade display font token', () => {
+    const css = fs.readFileSync(
+      path.resolve(__dirname, '../../App.css'),
+      'utf-8',
+    );
+    expect(css).toContain('Press Start 2P');
+    expect(css).toContain('--font-display');
+  });
+
+  it('CSS declares body font token', () => {
+    const css = fs.readFileSync(
+      path.resolve(__dirname, '../../App.css'),
+      'utf-8',
+    );
+    expect(css).toContain('--font-body');
+    expect(css).toContain('sans-serif');
+  });
+
+  it('font-display: swap is used for web font loading', () => {
+    const css = fs.readFileSync(
+      path.resolve(__dirname, '../../App.css'),
+      'utf-8',
+    );
+    expect(css).toContain('display=swap');
+  });
+});
+
+/* ── §5.4 Atmosphere checks ──────────────────────────────────── */
+describe('§5.4 Atmosphere', () => {
   it('atmosphere texture div is present with aria-hidden', () => {
     render(<App />);
     const texture = document.querySelector('.atmosphere-texture');
@@ -172,34 +265,41 @@ describe('§6.3 Atmosphere', () => {
     );
     expect(css).toContain('prefers-reduced-motion');
     expect(css).toContain('.atmosphere-shimmer');
-    // Verify reduced-motion blocks animation suppression
     const reducedMotionBlock = css.substring(
       css.indexOf('prefers-reduced-motion'),
     );
     expect(reducedMotionBlock).toContain('animation: none');
   });
 
-  it('CSS includes directional gradient (::before on game-layout)', () => {
+  it('CSS includes bright directional gradient on game-layout', () => {
     const css = fs.readFileSync(
       path.resolve(__dirname, '../../App.css'),
       'utf-8',
     );
-    expect(css).toContain('.game-layout::before');
+    expect(css).toContain('.game-layout');
     expect(css).toContain('linear-gradient');
   });
 
-  it('CSS includes vignette (::after on game-layout)', () => {
+  it('CSS includes scanlines', () => {
     const css = fs.readFileSync(
       path.resolve(__dirname, '../../App.css'),
       'utf-8',
     );
-    expect(css).toContain('.game-layout::after');
-    expect(css).toContain('radial-gradient');
+    expect(css).toContain('repeating-linear-gradient');
+  });
+
+  it('CSS includes board bezel with glowing cyan border', () => {
+    const css = fs.readFileSync(
+      path.resolve(__dirname, '../../App.css'),
+      'utf-8',
+    );
+    expect(css).toContain('.board-bezel');
+    expect(css).toContain('var(--neon-cyan)');
   });
 });
 
-/* ── §6.4 Coherence / regression ─────────────────────────────── */
-describe('§6.4 Coherence / regression', () => {
+/* ── §5.5 Coherence / regression ─────────────────────────────── */
+describe('§5.5 Coherence / regression', () => {
   it('"Still afloat" sentence stays removed', () => {
     startGame();
     expect(screen.queryByText(/Still afloat/i)).not.toBeInTheDocument();
@@ -239,5 +339,11 @@ describe('§6.4 Coherence / regression', () => {
       'utf-8',
     );
     expect(css).toContain('var(--surface-0');
+  });
+
+  it('redundant progress text removed ("N more to go" and "N%")', () => {
+    startGame();
+    expect(screen.queryByText(/more to go/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/% of the enemy fleet destroyed/i)).not.toBeInTheDocument();
   });
 });

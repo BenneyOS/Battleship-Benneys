@@ -6,7 +6,7 @@ interface EnemyFleetChecklistProps {
 
 export function EnemyFleetChecklist({ ships }: EnemyFleetChecklistProps) {
   return (
-    <div data-testid="enemy-fleet-checklist" style={{ marginTop: 8, textAlign: 'left', fontSize: 13 }}>
+    <div data-testid="enemy-fleet-checklist" style={{ marginTop: 8, textAlign: 'left', fontFamily: 'var(--font-body)', fontSize: 13 }}>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {ships.map((ship) => (
           <li

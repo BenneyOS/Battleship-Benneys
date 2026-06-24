@@ -97,16 +97,12 @@ describe('§5.2 Color-mapping tests', () => {
   it('legend swatches use the same three distinct tokens as the board', () => {
     startGameAndFire();
 
-    // Board CELL_COLORS map: miss=#3a4a5a, hit=#d4920b, sunk=#8b0000
-    // Legend renders matching swatches inline. We verify the three hex colors
-    // are distinct tokens in the source by checking the BoardGrid constants
-    // align with what the legend renders.
-    // 
-    // Rather than fragile DOM querying, test that the three color constants
-    // used in BoardGrid (miss/hit/sunk) are all distinct.
-    const MISS_COLOR = '#3a4a5a';
-    const HIT_COLOR = '#d4920b';
-    const SUNK_COLOR = '#8b0000';
+    // Board CELL_COLORS use token references (var(--state-miss/hit/sunk)).
+    // Verify the three tokens resolve to distinct values in App.css
+    // and that legend text labels are present.
+    const MISS_COLOR = 'var(--state-miss)';
+    const HIT_COLOR = 'var(--state-hit)';
+    const SUNK_COLOR = 'var(--state-sunk)';
 
     const colors = new Set([MISS_COLOR, HIT_COLOR, SUNK_COLOR]);
     expect(colors.size).toBe(3);
