@@ -1,8 +1,18 @@
 import { useEffect } from 'react';
-import { useGameState } from './app/useGameState';
+import { useGameState, SHIP_NAMES } from './app/useGameState';
 import { BoardGrid } from './ui/components/BoardGrid';
+import { TurnBanner } from './ui/components/TurnBanner';
+import { SetupProgress } from './ui/components/SetupProgress';
+import { BattleScoreboard } from './ui/components/BattleScoreboard';
 import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
+import { setupProgress, fleetProgress } from './engine/selectors';
+import type { FleetDef } from './engine/selectors';
+
+const FLEET_DEF: FleetDef[] = FLEET.map((length, i) => ({
+  name: SHIP_NAMES[i],
+  length,
+}));
 
 function App() {
   const {
@@ -12,9 +22,13 @@ function App() {
     orientation,
     setOrientation,
     currentShipLength,
+    turn,
+    aiPhase,
+    aiAnnouncement,
+    highlightedCell,
+    milestoneMessage,
     actions,
   } = useGameState();
-
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,13 +45,18 @@ function App() {
   const isGameOver = state.game.phase === 'gameOver';
   const allShipsPlaced = placementIndex >= FLEET.length;
 
+  // Derive progress data from board state
+  const setupProg = setupProgress(state.game.humanBoard, FLEET_DEF);
+  const battleProg = fleetProgress(state.game.aiBoard);
+
+  // Enemy grid is interactive only when it's human's turn and AI is idle
+  const enemyGridInteractive = isPlaying && turn === 'human' && aiPhase === 'idle';
+
   const handleSetupClick = (coord: Coord) => {
     if (currentShipLength) {
       actions.placeShip({ origin: coord, orientation, length: currentShipLength });
     }
   };
-
-  const shipNames = ['Carrier', 'Battleship', 'Cruiser', 'Submarine', 'Destroyer'];
 
   return (
     <div
@@ -59,6 +78,23 @@ function App() {
         Benney's Edition
       </p>
 
+      {/* Turn Banner — visible during play */}
+      <TurnBanner
+        turn={turn}
+        aiPhase={aiPhase}
+        aiAnnouncement={aiAnnouncement}
+        gamePhase={state.game.phase}
+      />
+
+      {/* Setup Progress Bar */}
+      {isSetup && <SetupProgress progress={setupProg} />}
+
+      {/* Battle Scoreboard */}
+      {(isPlaying || isGameOver) && (
+        <BattleScoreboard progress={battleProg} milestoneMessage={milestoneMessage} />
+      )}
+
+      {/* Message area */}
       <div
         style={{
           backgroundColor: '#1b2838',
@@ -72,6 +108,25 @@ function App() {
       >
         {message}
       </div>
+
+      {/* AI Announcement — aria-live for screen readers */}
+      {aiAnnouncement && (
+        <div
+          aria-live="polite"
+          style={{
+            backgroundColor: '#2c1a1a',
+            padding: '8px 18px',
+            borderRadius: 6,
+            marginBottom: 12,
+            fontSize: 14,
+            color: '#e74c3c',
+            fontWeight: 500,
+            border: '1px solid #e74c3c',
+          }}
+        >
+          {aiAnnouncement}
+        </div>
+      )}
 
       {isSetup && (
         <div style={{ marginBottom: 12, display: 'flex', gap: 10 }}>
@@ -115,14 +170,15 @@ function App() {
           onClick={isSetup && !allShipsPlaced ? handleSetupClick : undefined}
           label="Your Fleet"
           interactive={isSetup && !allShipsPlaced}
+          highlightedCell={highlightedCell}
         />
 
         <BoardGrid
           board={state.game.aiBoard}
           showShips={false}
-          onClick={isPlaying ? actions.fire : undefined}
+          onClick={enemyGridInteractive ? actions.fire : undefined}
           label="Enemy Waters"
-          interactive={isPlaying}
+          interactive={enemyGridInteractive}
         />
       </div>
 
@@ -139,7 +195,7 @@ function App() {
                 color: '#ecf0f1',
               }}
             >
-              {shipNames[i]} ({length})
+              {SHIP_NAMES[i]} ({length})
               {i < placementIndex ? ' \u2713' : ''}
             </div>
           ))}
