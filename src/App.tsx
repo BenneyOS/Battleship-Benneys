@@ -6,10 +6,14 @@ import { EventLine } from './ui/components/EventLine';
 import { SetupProgress } from './ui/components/SetupProgress';
 import { BattleScoreboard } from './ui/components/BattleScoreboard';
 import { EnemyFleetChecklist } from './ui/components/EnemyFleetChecklist';
+import { AccuracyChip } from './ui/components/AccuracyChip';
+import { MuteButton } from './ui/components/MuteButton';
+import { SinkCelebration } from './ui/components/SinkCelebration';
 import { deriveHeaderStatus } from './ui/headerStatus';
+import { deriveSinkCelebration } from './ui/sinkCelebration';
 import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
-import { setupProgress, fleetProgress, previewPlacement, enemyFleetStatus } from './engine/selectors';
+import { setupProgress, fleetProgress, playerAccuracy, previewPlacement, enemyFleetStatus } from './engine/selectors';
 import type { FleetDef, PreviewResult } from './engine/selectors';
 import './App.css';
 
@@ -30,9 +34,20 @@ function App() {
     highlightedCell,
     milestoneMessage,
     lastShotResult,
-    turnCount,
     actions,
   } = useGameState();
+
+  // Mute control — persists across the session via state
+  const [muted, setMuted] = useState(() => {
+    try { return localStorage.getItem('battleship-muted') === 'true'; } catch { return false; }
+  });
+  const toggleMute = useCallback(() => {
+    setMuted((m) => {
+      const next = !m;
+      try { localStorage.setItem('battleship-muted', String(next)); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
 
   // Placement preview state
   const [previewAnchor, setPreviewAnchor] = useState<Coord | null>(null);
@@ -56,7 +71,11 @@ function App() {
   // Derive progress data from board state
   const setupProg = setupProgress(state.game.humanBoard, FLEET_DEF);
   const battleProg = fleetProgress(state.game.aiBoard);
+  const accuracy = playerAccuracy(state.game.aiBoard);
   const enemyShipStatus = enemyFleetStatus(state.game.aiBoard);
+
+  // Derive sink celebration from last shot + fleet progress
+  const sinkCelebration = deriveSinkCelebration(lastShotResult, battleProg);
 
   // Derive header view-model from existing state
   const headerStatus = deriveHeaderStatus(
@@ -130,9 +149,11 @@ function App() {
         {/* PRIMARY: Turn Banner (non-interactive, animated handoff) */}
         <TurnBanner
           status={headerStatus}
-          turnCount={turnCount}
           gamePhase={state.game.phase}
         />
+
+        {/* ACCURACY CHIP: own zone outside the banner */}
+        <AccuracyChip accuracy={accuracy} gamePhase={state.game.phase} />
 
         {/* SECONDARY: Last-event line (tiered emphasis) */}
         <EventLine
@@ -166,6 +187,11 @@ function App() {
           <button onClick={actions.reset} style={{ ...buttonStylePrimary, marginTop: 10 }}>
             New Game
           </button>
+        )}
+
+        {/* Mute control */}
+        {(isPlaying || isGameOver) && (
+          <MuteButton muted={muted} onToggle={toggleMute} />
         )}
       </header>
 
@@ -264,15 +290,20 @@ function App() {
             Miss
           </span>
           <span>
-            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#c0392b', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }} />
+            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#d4920b', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }} />
             Hit
           </span>
           <span>
-            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#7b241c', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }} />
+            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#8b0000', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }}>
+              <span style={{ fontSize: 10, lineHeight: '14px', display: 'block', textAlign: 'center' }}>☠</span>
+            </span>
             Sunk
           </span>
         </div>
       )}
+
+      {/* Sink celebration overlay */}
+      <SinkCelebration celebration={sinkCelebration} muted={muted} />
     </div>
   );
 }

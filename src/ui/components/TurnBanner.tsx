@@ -2,11 +2,10 @@ import type { HeaderStatus } from '../headerStatus';
 
 interface TurnBannerProps {
   status: HeaderStatus;
-  turnCount: number;
   gamePhase: 'setup' | 'playing' | 'gameOver';
 }
 
-export function TurnBanner({ status, turnCount, gamePhase }: TurnBannerProps) {
+export function TurnBanner({ status, gamePhase }: TurnBannerProps) {
   const isPlayer = status.whoseTurn === 'player';
   const color = isPlayer ? '#3498db' : '#e74c3c';
 
@@ -28,9 +27,7 @@ export function TurnBanner({ status, turnCount, gamePhase }: TurnBannerProps) {
         <span className="turn-banner__title" style={{ color }}>
           {status.turnTitle}
         </span>
-        {gamePhase === 'playing' && turnCount > 0 && (
-          <span className="turn-banner__turn-count">Turn {turnCount}</span>
-        )}
+
       </div>
       <div className="turn-banner__prompt">
         {status.prompt}

@@ -154,6 +154,40 @@ export function previewPlacement(
   }
 }
 
+// ─── Player Accuracy (Feature A) ─────────────────────────────────────────────
+
+export interface AccuracyData {
+  shots: number;
+  hits: number;
+  percent: number;
+}
+
+/**
+ * Derive player accuracy from the enemy board.
+ * hits reuses the same hit determination the board already uses (shot on a ship cell).
+ * Zero-safe: 0 shots → 0%, never NaN. Clamped 0–100.
+ */
+export function playerAccuracy(enemyBoard: Board): AccuracyData {
+  const shots = enemyBoard.shots.size;
+  if (shots === 0) return { shots: 0, hits: 0, percent: 0 };
+
+  let hits = 0;
+  const shipCellKeys = new Set<string>();
+  for (const ship of enemyBoard.ships) {
+    for (let i = 0; i < ship.length; i++) {
+      const cx = ship.origin.x + (ship.orientation === 'horizontal' ? i : 0);
+      const cy = ship.origin.y + (ship.orientation === 'vertical' ? i : 0);
+      shipCellKeys.add(`${cx},${cy}`);
+    }
+  }
+  for (const shotKey of enemyBoard.shots) {
+    if (shipCellKeys.has(shotKey)) hits++;
+  }
+
+  const percent = Math.max(0, Math.min(100, Math.round((hits / shots) * 100)));
+  return { shots, hits, percent };
+}
+
 // ─── Enemy Fleet Status (Named Checklist) ───────────────────────────────────
 
 export interface ShipStatus {

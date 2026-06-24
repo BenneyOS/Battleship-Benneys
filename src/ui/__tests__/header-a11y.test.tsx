@@ -44,14 +44,14 @@ describe('§6.4 Accessibility tests', () => {
 
   it('turn banner has aria-live="polite" for turn change announcements', () => {
     const status = deriveHeaderStatus('human', 'idle', 'playing', null);
-    render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+    render(<TurnBanner status={status} gamePhase="playing" />);
     const banner = screen.getByTestId('turn-banner');
     expect(banner.getAttribute('aria-live')).toBe('polite');
   });
 
   it('banner icon is aria-hidden (decorative, since text conveys state)', () => {
     const status = deriveHeaderStatus('human', 'idle', 'playing', null);
-    render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+    render(<TurnBanner status={status} gamePhase="playing" />);
     const icon = document.querySelector('.turn-banner__icon');
     expect(icon).not.toBeNull();
     expect(icon!.getAttribute('aria-hidden')).toBe('true');
@@ -59,7 +59,7 @@ describe('§6.4 Accessibility tests', () => {
 
   it('prompt text is present as subtitle (not hidden)', () => {
     const status = deriveHeaderStatus('human', 'idle', 'playing', null);
-    render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+    render(<TurnBanner status={status} gamePhase="playing" />);
     const prompt = document.querySelector('.turn-banner__prompt');
     expect(prompt).not.toBeNull();
     expect(prompt!.textContent).toBe('Fire at the enemy grid');
