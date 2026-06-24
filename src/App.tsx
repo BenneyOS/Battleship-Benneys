@@ -326,24 +326,26 @@ function App() {
         )}
 
         {/* Placement tools (clustered near board): orientation + Auto-Place */}
-        {isSetup && !allShipsPlaced && (
+        {isSetup && (
           <div className="setup-controls__tools">
-            <button
-              type="button"
-              className="btn-rotate"
-              data-testid="rotate-button"
-              onClick={() => setOrientation((o) => (o === 'horizontal' ? 'vertical' : 'horizontal'))}
-              aria-label={`Rotate to ${orientation === 'horizontal' ? 'vertical' : 'horizontal'}`}
-            >
-              <span className="btn-rotate__icon" aria-hidden="true">↻</span>
-              <span className="btn-rotate__label">{orientation === 'horizontal' ? 'Horizontal' : 'Vertical'}</span>
-              <span className="btn-rotate__hint">R</span>
-            </button>
+            {!allShipsPlaced && (
+              <button
+                type="button"
+                className="btn-rotate"
+                data-testid="rotate-button"
+                onClick={() => setOrientation((o) => (o === 'horizontal' ? 'vertical' : 'horizontal'))}
+                aria-label={`Rotate to ${orientation === 'horizontal' ? 'vertical' : 'horizontal'}`}
+              >
+                <span className="btn-rotate__icon" aria-hidden="true">↻</span>
+                <span className="btn-rotate__label">{orientation === 'horizontal' ? 'Horizontal' : 'Vertical'}</span>
+                <span className="btn-rotate__hint">R</span>
+              </button>
+            )}
             <button
               onClick={actions.autoPlaceHumanFleet}
               className="btn-secondary"
             >
-              Auto-Place Ships
+              {allShipsPlaced ? 'Re-randomize Fleet' : 'Auto-Place Ships'}
             </button>
           </div>
         )}
