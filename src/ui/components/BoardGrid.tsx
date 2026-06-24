@@ -10,6 +10,7 @@ interface BoardGridProps {
   label: string;
   hoverPreview?: { origin: Coord; orientation: 'horizontal' | 'vertical'; length: number } | null;
   interactive: boolean;
+  highlightedCell?: Coord | null;
 }
 
 const CELL_COLORS: Record<CellState, string> = {
@@ -37,6 +38,7 @@ export function BoardGrid({
   label,
   hoverPreview,
   interactive,
+  highlightedCell,
 }: BoardGridProps) {
   const previewCells = new Set<string>();
   if (hoverPreview) {
@@ -91,7 +93,12 @@ export function BoardGrid({
                 const coord: Coord = { x, y };
                 const cellState = getCellState(board, coord, showShips);
                 const isPreview = previewCells.has(`${x},${y}`);
-                const bg = isPreview ? '#2e86c1' : CELL_COLORS[cellState];
+                const isHighlighted = highlightedCell?.x === x && highlightedCell?.y === y;
+                const bg = isHighlighted
+                  ? '#f39c12'
+                  : isPreview
+                    ? '#2e86c1'
+                    : CELL_COLORS[cellState];
                 const isClickable = interactive && onClick;
                 return (
                   <td
