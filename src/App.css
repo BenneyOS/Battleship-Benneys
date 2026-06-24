@@ -94,6 +94,133 @@
   max-width: 420px;
 }
 
+/* ─── Turn Banner ────────────────────────────────────────────────── */
+.turn-banner {
+  width: 100%;
+  max-width: 600px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-align: center;
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+  border: 2px solid transparent;
+}
+
+.turn-banner--player {
+  background-color: #1a3a5c;
+  border-color: #3498db;
+}
+
+.turn-banner--computer {
+  background-color: #3c1a1a;
+  border-color: #e74c3c;
+}
+
+.turn-banner__main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.turn-banner__icon {
+  font-size: 22px;
+  transition: transform 0.4s ease;
+}
+
+.turn-banner__title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.turn-banner__turn-count {
+  font-size: 11px;
+  color: #7f8c8d;
+  letter-spacing: 1px;
+  margin-left: 4px;
+}
+
+.turn-banner__prompt {
+  font-size: 13px;
+  color: #95a5a6;
+  margin-top: 4px;
+}
+
+/* Handoff pulse animation */
+@keyframes banner-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.turn-banner--computer .turn-banner__icon {
+  animation: banner-pulse 0.6s ease-in-out;
+}
+
+/* ─── Event Line ─────────────────────────────────────────────────── */
+.event-line {
+  margin-top: 6px;
+  padding: 4px 16px;
+  font-size: 13px;
+  color: #7f8c8d;
+  text-align: center;
+  border-radius: 4px;
+  transition: color 0.3s ease, background-color 0.3s ease;
+  max-width: 600px;
+  width: 100%;
+}
+
+.event-line--miss {
+  color: #7f8c8d;
+}
+
+.event-line--hit {
+  color: #e67e22;
+  font-weight: 600;
+  animation: event-flash 0.4s ease;
+}
+
+.event-line--sunk {
+  color: #e74c3c;
+  font-weight: 700;
+  background-color: rgba(231, 76, 60, 0.12);
+  animation: event-sunk 0.6s ease;
+}
+
+.event-line__callout {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #e74c3c;
+  margin-bottom: 2px;
+}
+
+.event-line__text {
+  display: block;
+}
+
+@keyframes event-flash {
+  0% { background-color: rgba(230, 126, 34, 0.25); }
+  100% { background-color: transparent; }
+}
+
+@keyframes event-sunk {
+  0% { transform: scale(1.05); background-color: rgba(231, 76, 60, 0.3); }
+  100% { transform: scale(1); background-color: rgba(231, 76, 60, 0.12); }
+}
+
+/* ─── Reduced-motion: keep state/color, drop movement ────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .turn-banner,
+  .turn-banner__icon,
+  .event-line {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* Responsive: single column below breakpoint */
 @media (max-width: 899px) {
   .game-layout {

@@ -15,6 +15,7 @@ import type { FullGameState } from '../engine/game';
 import { AIM_MS } from './config';
 import { formatMove, fleetProgress, milestoneFor } from '../engine/selectors';
 import type { ShotOutcome } from '../engine/selectors';
+import type { LastShotEvent } from '../ui/headerStatus';
 
 export type Turn = 'human' | 'ai';
 export type AiPhase = 'idle' | 'aiming' | 'announced';
@@ -38,6 +39,10 @@ export function useGameState() {
   // Milestone tracking (persists across renders, resets on new game)
   const [crossedMilestones, setCrossedMilestones] = useState<Set<number>>(new Set());
   const [milestoneMessage, setMilestoneMessage] = useState<string | null>(null);
+
+  // Last shot event — shared by header banner + event line + side panel
+  const [lastShotResult, setLastShotResult] = useState<LastShotEvent | null>(null);
+  const [turnCount, setTurnCount] = useState(0);
 
   // Guard against re-entrancy
   const aiTurnInProgress = useRef(false);
@@ -89,6 +94,27 @@ export function useGameState() {
         if (newState.game.phase === 'gameOver') {
           setState(newState);
           setMessage('You win! All enemy ships sunk!');
+          // The winning shot must be a sunk — find the ship
+          const winShips = newState.game.aiBoard.ships;
+          let winShipName: string | undefined;
+          for (let si = 0; si < winShips.length; si++) {
+            const ship = winShips[si];
+            const cells = Array.from({ length: ship.length }, (_, i) =>
+              ship.orientation === 'horizontal'
+                ? { x: ship.origin.x + i, y: ship.origin.y }
+                : { x: ship.origin.x, y: ship.origin.y + i }
+            );
+            if (cells.some((c) => c.x === coord.x && c.y === coord.y)) {
+              winShipName = SHIP_NAMES[si] ?? undefined;
+              break;
+            }
+          }
+          setLastShotResult({
+            actor: 'human',
+            coord,
+            outcome: 'sunk',
+            sunkShipName: winShipName,
+          });
           // Check milestone for human winning
           const progress = fleetProgress(newState.game.aiBoard);
           const m = milestoneFor(progress.percent);
@@ -100,6 +126,39 @@ export function useGameState() {
         }
 
         setState(newState);
+
+        // Track human shot result for the header event line
+        const humanResult = newState.game.aiBoard.shots.has(`${coord.x},${coord.y}`)
+          ? (() => {
+              // Determine outcome from the board diff
+              const ships = newState.game.aiBoard.ships;
+              for (const ship of ships) {
+                const cells = Array.from({ length: ship.length }, (_, i) =>
+                  ship.orientation === 'horizontal'
+                    ? { x: ship.origin.x + i, y: ship.origin.y }
+                    : { x: ship.origin.x, y: ship.origin.y + i }
+                );
+                if (cells.some((c) => c.x === coord.x && c.y === coord.y)) {
+                  const allHit = cells.every((c) => newState.game.aiBoard.shots.has(`${c.x},${c.y}`));
+                  if (allHit) {
+                    const shipIdx = ships.indexOf(ship);
+                    return {
+                      outcome: 'sunk' as ShotOutcome,
+                      sunkShipName: shipIdx >= 0 ? SHIP_NAMES[shipIdx] : undefined,
+                    };
+                  }
+                  return { outcome: 'hit' as ShotOutcome };
+                }
+              }
+              return { outcome: 'miss' as ShotOutcome };
+            })()
+          : { outcome: 'miss' as ShotOutcome };
+        setLastShotResult({
+          actor: 'human',
+          coord,
+          outcome: humanResult.outcome,
+          sunkShipName: humanResult.sunkShipName,
+        });
 
         // Check milestone after human shot
         const progress = fleetProgress(newState.game.aiBoard);
@@ -176,6 +235,12 @@ export function useGameState() {
           setAiPhase('announced');
           setHighlightedCell(aiCoord);
           setAiAnnouncement(announcement);
+          setLastShotResult({
+            actor: 'computer',
+            coord: aiCoord,
+            outcome,
+            sunkShipName,
+          });
           setState(finalState);
 
           if (defeated) {
@@ -190,6 +255,7 @@ export function useGameState() {
             setAiPhase('idle');
             setHighlightedCell(null);
             setMessage('Your turn \u2014 fire at the enemy grid.');
+            setTurnCount((c) => c + 1);
             aiTurnInProgress.current = false;
           }, Math.min(AIM_MS, 400));
         };
@@ -214,6 +280,8 @@ export function useGameState() {
     setHighlightedCell(null);
     setCrossedMilestones(new Set());
     setMilestoneMessage(null);
+    setLastShotResult(null);
+    setTurnCount(0);
     aiTurnInProgress.current = false;
   }, []);
 
@@ -250,6 +318,8 @@ export function useGameState() {
     highlightedCell,
     milestoneMessage,
     crossedMilestones,
+    lastShotResult,
+    turnCount,
     actions: {
       placeShip: placeShipAction,
       startPlaying,

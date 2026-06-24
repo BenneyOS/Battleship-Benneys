@@ -108,7 +108,7 @@ describe('§5.3 Behavior-preservation tests', () => {
     // Now TurnBanner should be in the header with role="status"
     const banner = header.querySelector('[role="status"]');
     expect(banner).not.toBeNull();
-    expect(banner!.textContent).toContain('Your turn');
+    expect(banner!.textContent!.toLowerCase()).toContain('your turn');
   });
 
   it('turn banner is NOT in player or enemy zones', () => {

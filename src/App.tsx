@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useGameState, SHIP_NAMES } from './app/useGameState';
 import { BoardGrid } from './ui/components/BoardGrid';
 import { TurnBanner } from './ui/components/TurnBanner';
+import { EventLine } from './ui/components/EventLine';
 import { SetupProgress } from './ui/components/SetupProgress';
 import { BattleScoreboard } from './ui/components/BattleScoreboard';
 import { EnemyFleetChecklist } from './ui/components/EnemyFleetChecklist';
+import { deriveHeaderStatus } from './ui/headerStatus';
 import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
 import { setupProgress, fleetProgress, previewPlacement, enemyFleetStatus } from './engine/selectors';
@@ -29,6 +31,8 @@ function App() {
     aiAnnouncement,
     highlightedCell,
     milestoneMessage,
+    lastShotResult,
+    turnCount,
     actions,
   } = useGameState();
 
@@ -55,6 +59,15 @@ function App() {
   const setupProg = setupProgress(state.game.humanBoard, FLEET_DEF);
   const battleProg = fleetProgress(state.game.aiBoard);
   const enemyShipStatus = enemyFleetStatus(state.game.aiBoard);
+
+  // Derive header view-model from existing state
+  const headerStatus = deriveHeaderStatus(
+    turn,
+    aiPhase,
+    state.game.phase,
+    lastShotResult,
+    state.game.winner as 'human' | 'ai' | null | undefined,
+  );
 
   // Compute preview based on current hover anchor
   const preview: PreviewResult | null =
@@ -116,47 +129,18 @@ function App() {
           Benney's Edition
         </p>
 
-        {/* Turn Banner */}
+        {/* PRIMARY: Turn Banner (non-interactive, animated handoff) */}
         <TurnBanner
-          turn={turn}
-          aiPhase={aiPhase}
-          aiAnnouncement={aiAnnouncement}
+          status={headerStatus}
+          turnCount={turnCount}
           gamePhase={state.game.phase}
         />
 
-        {/* AI Announcement — aria-live for screen readers */}
-        {aiAnnouncement && (
-          <div
-            aria-live="polite"
-            style={{
-              backgroundColor: '#2c1a1a',
-              padding: '8px 18px',
-              borderRadius: 6,
-              marginTop: 8,
-              fontSize: 14,
-              color: '#e74c3c',
-              fontWeight: 500,
-              border: '1px solid #e74c3c',
-            }}
-          >
-            {aiAnnouncement}
-          </div>
-        )}
-
-        {/* Message area */}
-        <div
-          style={{
-            backgroundColor: '#1b2838',
-            padding: '8px 20px',
-            borderRadius: 8,
-            marginTop: 8,
-            fontSize: 14,
-            maxWidth: 600,
-            textAlign: 'center',
-          }}
-        >
-          {message}
-        </div>
+        {/* SECONDARY: Last-event line (tiered emphasis) */}
+        <EventLine
+          lastEvent={headerStatus.lastEvent}
+          eventTier={headerStatus.eventTier}
+        />
 
         {/* Setup controls in header */}
         {isSetup && (

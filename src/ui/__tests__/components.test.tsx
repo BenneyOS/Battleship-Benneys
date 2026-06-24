@@ -6,6 +6,7 @@ import { render, screen, cleanup } from '@testing-library/react';
 import { TurnBanner } from '../components/TurnBanner';
 import { SetupProgress } from '../components/SetupProgress';
 import { BattleScoreboard } from '../components/BattleScoreboard';
+import { deriveHeaderStatus } from '../headerStatus';
 import type { SetupProgressData, FleetProgressData } from '../../engine/selectors';
 
 afterEach(() => {
@@ -15,48 +16,36 @@ afterEach(() => {
 describe('§6.6 Component / UI smoke tests', () => {
   describe('TurnBanner', () => {
     it('renders correct text for human turn', () => {
-      render(
-        <TurnBanner turn="human" aiPhase="idle" aiAnnouncement={null} gamePhase="playing" />,
-      );
-      expect(screen.getByRole('status')).toHaveTextContent(
-        'Your turn \u2014 fire at the enemy grid',
-      );
+      const status = deriveHeaderStatus('human', 'idle', 'playing', null);
+      render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+      expect(screen.getByRole('status')).toHaveTextContent(/YOUR TURN/i);
+      expect(screen.getByRole('status')).toHaveTextContent(/Fire at the enemy grid/i);
     });
 
     it('renders "taking aim" for AI aiming phase', () => {
-      render(
-        <TurnBanner turn="ai" aiPhase="aiming" aiAnnouncement={null} gamePhase="playing" />,
-      );
-      expect(screen.getByRole('status')).toHaveTextContent(
-        'Computer is taking aim',
-      );
+      const status = deriveHeaderStatus('ai', 'aiming', 'playing', null);
+      render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+      expect(screen.getByRole('status')).toHaveTextContent(/Taking aim/i);
     });
 
-    it('renders AI announcement when in announced phase', () => {
-      render(
-        <TurnBanner
-          turn="ai"
-          aiPhase="announced"
-          aiAnnouncement="Computer fires at C3 \u2014 Hit!"
-          gamePhase="playing"
-        />,
-      );
-      expect(screen.getByRole('status')).toHaveTextContent(
-        /Computer fires at C3/,
-      );
+    it('renders computer turn when in announced phase', () => {
+      const status = deriveHeaderStatus('ai', 'announced', 'playing', {
+        actor: 'computer', coord: { x: 2, y: 2 }, outcome: 'hit',
+      });
+      render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+      expect(screen.getByRole('status')).toHaveTextContent(/COMPUTER'S TURN/i);
     });
 
-    it('does not render during setup phase', () => {
-      const { container } = render(
-        <TurnBanner turn="human" aiPhase="idle" aiAnnouncement={null} gamePhase="setup" />,
-      );
-      expect(container.firstChild).toBeNull();
+    it('renders setup phase correctly', () => {
+      const status = deriveHeaderStatus('human', 'idle', 'setup', null);
+      render(<TurnBanner status={status} turnCount={0} gamePhase="setup" />);
+      expect(screen.getByRole('status')).toHaveTextContent(/SETUP/i);
+      expect(screen.getByRole('status')).toHaveTextContent(/Place your fleet/i);
     });
 
     it('uses aria-live="polite" for announcements', () => {
-      render(
-        <TurnBanner turn="human" aiPhase="idle" aiAnnouncement={null} gamePhase="playing" />,
-      );
+      const status = deriveHeaderStatus('human', 'idle', 'playing', null);
+      render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
       expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
     });
   });
