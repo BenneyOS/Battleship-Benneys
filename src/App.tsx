@@ -271,7 +271,7 @@ function App() {
         {isPlaying ? (
           <div
             className="hud-console"
-            data-turn={turn === 'player' ? 'player' : 'computer'}
+            data-turn={turn === 'human' ? 'player' : 'computer'}
             data-testid="hud-console"
           >
             <div className="hud-console__zone hud-console__zone--turn">
