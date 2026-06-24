@@ -1,44 +1,40 @@
-import type { Turn, AiPhase } from '../../app/useGameState';
+import type { HeaderStatus } from '../headerStatus';
 
 interface TurnBannerProps {
-  turn: Turn;
-  aiPhase: AiPhase;
-  aiAnnouncement: string | null;
+  status: HeaderStatus;
+  turnCount: number;
   gamePhase: 'setup' | 'playing' | 'gameOver';
 }
 
-export function TurnBanner({ turn, aiPhase, aiAnnouncement, gamePhase }: TurnBannerProps) {
-  if (gamePhase !== 'playing') return null;
+export function TurnBanner({ status, turnCount, gamePhase }: TurnBannerProps) {
+  const isPlayer = status.whoseTurn === 'player';
+  const color = isPlayer ? '#3498db' : '#e74c3c';
 
-  const isHumanTurn = turn === 'human' && aiPhase === 'idle';
-
-  const icon = isHumanTurn ? '\u271A' : '\u{1F4E1}';
-  const color = isHumanTurn ? '#3498db' : '#e74c3c';
-  const text = isHumanTurn
-    ? 'Your turn \u2014 fire at the enemy grid'
-    : aiPhase === 'aiming'
-      ? 'Computer is taking aim\u2026'
-      : aiAnnouncement ?? "Computer's turn";
+  const icon = gamePhase === 'setup'
+    ? '\u2693'
+    : gamePhase === 'gameOver'
+      ? (status.turnTitle === 'VICTORY' ? '\u{1F3C6}' : '\u{1F480}')
+      : isPlayer ? '\u271A' : '\u{1F4E1}';
 
   return (
     <div
+      className={`turn-banner turn-banner--${isPlayer ? 'player' : 'computer'}`}
       role="status"
       aria-live="polite"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        padding: '8px 20px',
-        borderRadius: 8,
-        backgroundColor: isHumanTurn ? '#1a3a5c' : '#3c1a1a',
-        border: `2px solid ${color}`,
-        marginBottom: 12,
-        fontSize: 15,
-        fontWeight: 500,
-      }}
+      data-testid="turn-banner"
     >
-      <span style={{ fontSize: 20 }} aria-hidden="true">{icon}</span>
-      <span style={{ color }}>{text}</span>
+      <div className="turn-banner__main">
+        <span className="turn-banner__icon" aria-hidden="true">{icon}</span>
+        <span className="turn-banner__title" style={{ color }}>
+          {status.turnTitle}
+        </span>
+        {gamePhase === 'playing' && turnCount > 0 && (
+          <span className="turn-banner__turn-count">Turn {turnCount}</span>
+        )}
+      </div>
+      <div className="turn-banner__prompt">
+        {status.prompt}
+      </div>
     </div>
   );
 }
