@@ -108,9 +108,9 @@ export function VictoryScreen({
           <table className="endgame-screen__table">
             <thead>
               <tr>
-                <th style={{ width: 24, height: 24 }} />
+                <th className="endgame-screen__coord" style={{ width: 24 }} />
                 {Array.from({ length: BOARD_SIZE }, (_, i) => (
-                  <th key={i} className="endgame-screen__coord">
+                  <th key={i} className="endgame-screen__coord endgame-screen__coord--col">
                     {COLUMN_LABELS[i]}
                   </th>
                 ))}
@@ -143,13 +143,23 @@ export function VictoryScreen({
                 const svg = SHIP_SVGS[name];
                 if (!svg) return null;
 
-                // Use percentage-based positioning so silhouettes adapt to mobile cell sizes.
-                // The grid is (BOARD_SIZE + 1) units wide/tall (1 for header column/row).
-                const totalUnits = BOARD_SIZE + 1;
-                const leftPct = ((ship.origin.x + 1) / totalUnits) * 100;
-                const topPct = ((ship.origin.y + 1) / totalUnits) * 100;
-                const wPct = ((ship.orientation === 'horizontal' ? ship.length : 1) / totalUnits) * 100;
-                const hPct = ((ship.orientation === 'vertical' ? ship.length : 1) / totalUnits) * 100;
+                // Positioning accounts for non-uniform column widths:
+                // coord column = 24px + 16px padding; header row = 24px;
+                // data cells = 44px + 2px border = 46px each (border-collapse: separate).
+                // Use CSS calc() so mobile overrides (32px cells) still work via the cascade.
+                const coordColW = 40; // 24px width + 16px padding-right
+                const headerRowH = 24; // column header row height
+                const cellW = 46; // 44px cell + 2×1px border
+                const cellH = 46;
+                const tableW = coordColW + BOARD_SIZE * cellW;
+                const tableH = headerRowH + BOARD_SIZE * cellH;
+
+                const leftPct = ((coordColW + ship.origin.x * cellW) / tableW) * 100;
+                const topPct = ((headerRowH + ship.origin.y * cellH) / tableH) * 100;
+                const spanX = ship.orientation === 'horizontal' ? ship.length : 1;
+                const spanY = ship.orientation === 'vertical' ? ship.length : 1;
+                const wPct = ((spanX * cellW) / tableW) * 100;
+                const hPct = ((spanY * cellH) / tableH) * 100;
 
                 return (
                   <svg
