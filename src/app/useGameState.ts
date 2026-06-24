@@ -115,12 +115,12 @@ export function useGameState() {
             outcome: 'sunk',
             sunkShipName: winShipName,
           });
-          // Check milestone for human winning
+          // Check milestone for human winning (keyed to sunk count)
           const progress = fleetProgress(newState.game.aiBoard);
-          const m = milestoneFor(progress.percent);
+          const m = milestoneFor(progress.sunk);
           if (m !== null && !crossedMilestones.has(m)) {
             setCrossedMilestones((prev) => new Set([...prev, m]));
-            setMilestoneMessage(getMilestoneText(m, progress.percent));
+            setMilestoneMessage(getMilestoneText(m));
           }
           return;
         }
@@ -160,12 +160,12 @@ export function useGameState() {
           sunkShipName: humanResult.sunkShipName,
         });
 
-        // Check milestone after human shot
+        // Check milestone after human shot (keyed to sunk count)
         const progress = fleetProgress(newState.game.aiBoard);
-        const m = milestoneFor(progress.percent);
+        const m = milestoneFor(progress.sunk);
         if (m !== null && !crossedMilestones.has(m)) {
           setCrossedMilestones((prev) => new Set([...prev, m]));
-          setMilestoneMessage(getMilestoneText(m, progress.percent));
+          setMilestoneMessage(getMilestoneText(m));
         }
 
         // --- Begin AI turn sequence ---
@@ -330,16 +330,12 @@ export function useGameState() {
   };
 }
 
-function getMilestoneText(threshold: number, actualPercent: number): string {
-  switch (threshold) {
-    case 50:
-      return `Halfway there \u2014 ${actualPercent}% of the enemy fleet destroyed!`;
-    case 70:
-      return `You're closing in \u2014 ${actualPercent}% of the enemy fleet is down!`;
-    case 90:
-      return `Almost there \u2014 ${actualPercent}% of the enemy fleet destroyed!`;
-    case 100:
-      return `Victory! ${actualPercent}% of the enemy fleet destroyed!`;
+function getMilestoneText(sunkCount: number): string {
+  switch (sunkCount) {
+    case 3:
+      return 'Over halfway \u2014 3 of 5 ships down!';
+    case 4:
+      return 'One to go \u2014 4 of 5 ships sunk!';
     default:
       return '';
   }

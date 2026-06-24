@@ -170,71 +170,61 @@ describe('fleetProgress', () => {
   });
 });
 
-// ─── §6.3 Unit tests — milestone logic ──────────────────────────────────────
+// ─── §6.3 Unit tests — milestone logic (ship-count-based) ───────────────────
+// With 5 ships the only reachable percentages are 0/20/40/60/80/100%.
+// Milestones fire at sunk count 3 (60%, "over halfway") and 4 (80%, "one to go").
+// Never at 50/70/90 — those are unreachable and must never be specified.
 
-describe('milestoneFor', () => {
-  it('returns null below 50%', () => {
+describe('milestoneFor (ship-count-based)', () => {
+  it('returns null for sunk counts 0, 1, 2 (below threshold)', () => {
     expect(milestoneFor(0)).toBeNull();
-    expect(milestoneFor(20)).toBeNull();
-    expect(milestoneFor(49)).toBeNull();
+    expect(milestoneFor(1)).toBeNull();
+    expect(milestoneFor(2)).toBeNull();
   });
 
-  it('returns 50 at exactly 50%', () => {
-    expect(milestoneFor(50)).toBe(50);
+  it('returns 3 at sunk count 3 (60% — over halfway)', () => {
+    expect(milestoneFor(3)).toBe(3);
   });
 
-  it('returns 50 between 50 and 69', () => {
-    expect(milestoneFor(60)).toBe(50);
-    expect(milestoneFor(69)).toBe(50);
+  it('returns 4 at sunk count 4 (80% — one to go)', () => {
+    expect(milestoneFor(4)).toBe(4);
   });
 
-  it('returns 70 between 70 and 89', () => {
-    expect(milestoneFor(70)).toBe(70);
-    expect(milestoneFor(80)).toBe(70);
-    expect(milestoneFor(89)).toBe(70);
+  it('returns 4 at sunk count 5 (all sunk — highest milestone is 4)', () => {
+    expect(milestoneFor(5)).toBe(4);
   });
 
-  it('returns 90 between 90 and 99', () => {
-    expect(milestoneFor(90)).toBe(90);
-    expect(milestoneFor(99)).toBe(90);
-  });
-
-  it('returns 100 at 100%', () => {
-    expect(milestoneFor(100)).toBe(100);
-  });
-
-  it('milestones fire once per threshold in a scripted progression', () => {
-    // Simulate a 5-ship game: sinking ships one by one → 20, 40, 60, 80, 100%
-    const percents = [20, 40, 60, 80, 100];
+  it('milestones fire once per threshold in a scripted 5-ship progression', () => {
+    // Simulate sinking ships one by one: sunkCount 1→2→3→4→5
+    const sunkCounts = [1, 2, 3, 4, 5];
     const crossed = new Set<number>();
     const fired: number[] = [];
 
-    for (const p of percents) {
-      const m = milestoneFor(p);
+    for (const sc of sunkCounts) {
+      const m = milestoneFor(sc);
       if (m !== null && !crossed.has(m)) {
         crossed.add(m);
         fired.push(m);
       }
     }
 
-    // Only 50 is skipped (never exactly hit), we get 50 at 60%, 70 at 80%, 90 at ?, 100
-    // Actually: 20→null, 40→null, 60→50, 80→70, 100→100
-    expect(fired).toEqual([50, 70, 100]);
+    // 1→null, 2→null, 3→3, 4→4, 5→4 (already fired)
+    expect(fired).toEqual([3, 4]);
   });
 
-  it('no repeats on non-crossing shots', () => {
-    // Hitting 60% twice should only fire milestone once
+  it('no repeats on non-crossing sinks', () => {
     const crossed = new Set<number>();
     const fired: number[] = [];
 
-    for (const p of [60, 60, 60]) {
-      const m = milestoneFor(p);
+    // Calling with sunkCount 3 three times
+    for (const sc of [3, 3, 3]) {
+      const m = milestoneFor(sc);
       if (m !== null && !crossed.has(m)) {
         crossed.add(m);
         fired.push(m);
       }
     }
-    expect(fired).toEqual([50]); // fires once
+    expect(fired).toEqual([3]); // fires once
   });
 });
 
