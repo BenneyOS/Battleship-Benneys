@@ -120,7 +120,7 @@ export function useGameState() {
           const m = milestoneFor(progress.percent);
           if (m !== null && !crossedMilestones.has(m)) {
             setCrossedMilestones((prev) => new Set([...prev, m]));
-            setMilestoneMessage(getMilestoneText(m));
+            setMilestoneMessage(getMilestoneText(m, progress.percent));
           }
           return;
         }
@@ -165,7 +165,7 @@ export function useGameState() {
         const m = milestoneFor(progress.percent);
         if (m !== null && !crossedMilestones.has(m)) {
           setCrossedMilestones((prev) => new Set([...prev, m]));
-          setMilestoneMessage(getMilestoneText(m));
+          setMilestoneMessage(getMilestoneText(m, progress.percent));
         }
 
         // --- Begin AI turn sequence ---
@@ -330,16 +330,16 @@ export function useGameState() {
   };
 }
 
-function getMilestoneText(threshold: number): string {
+function getMilestoneText(threshold: number, actualPercent: number): string {
   switch (threshold) {
     case 50:
-      return "Halfway there \u2014 50% of the enemy fleet destroyed!";
+      return `Halfway there \u2014 ${actualPercent}% of the enemy fleet destroyed!`;
     case 70:
-      return "You're closing in \u2014 70% of the enemy fleet is down!";
+      return `You're closing in \u2014 ${actualPercent}% of the enemy fleet is down!`;
     case 90:
-      return "Almost there \u2014 90% of the enemy fleet destroyed!";
+      return `Almost there \u2014 ${actualPercent}% of the enemy fleet destroyed!`;
     case 100:
-      return "Victory! 100% of the enemy fleet destroyed!";
+      return `Victory! ${actualPercent}% of the enemy fleet destroyed!`;
     default:
       return '';
   }
