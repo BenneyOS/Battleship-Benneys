@@ -3,12 +3,19 @@ import { BOARD_SIZE } from '../../engine/types';
 import { getCellState } from '../../engine/board';
 import type { CellState } from '../../engine/board';
 
+export interface PreviewState {
+  cells: Coord[];
+  isValid: boolean;
+}
+
 interface BoardGridProps {
   board: Board;
   showShips: boolean;
   onClick?: (coord: Coord) => void;
+  onCellHover?: (coord: Coord) => void;
+  onBoardLeave?: () => void;
   label: string;
-  hoverPreview?: { origin: Coord; orientation: 'horizontal' | 'vertical'; length: number } | null;
+  preview?: PreviewState | null;
   interactive: boolean;
   highlightedCell?: Coord | null;
 }
@@ -35,24 +42,22 @@ export function BoardGrid({
   board,
   showShips,
   onClick,
+  onCellHover,
+  onBoardLeave,
   label,
-  hoverPreview,
+  preview,
   interactive,
   highlightedCell,
 }: BoardGridProps) {
-  const previewCells = new Set<string>();
-  if (hoverPreview) {
-    for (let i = 0; i < hoverPreview.length; i++) {
-      const x = hoverPreview.origin.x + (hoverPreview.orientation === 'horizontal' ? i : 0);
-      const y = hoverPreview.origin.y + (hoverPreview.orientation === 'vertical' ? i : 0);
-      if (x < BOARD_SIZE && y < BOARD_SIZE) {
-        previewCells.add(`${x},${y}`);
-      }
+  const previewCellSet = new Set<string>();
+  if (preview) {
+    for (const c of preview.cells) {
+      previewCellSet.add(`${c.x},${c.y}`);
     }
   }
 
   return (
-    <div style={{ display: 'inline-block', margin: '0 16px' }}>
+    <div style={{ display: 'inline-block', margin: '0 16px' }} onMouseLeave={onBoardLeave}>
       <h3 style={{ textAlign: 'center', color: '#ecf0f1', margin: '0 0 8px' }}>{label}</h3>
       <table style={{ borderCollapse: 'collapse' }}>
         <thead>
@@ -92,18 +97,29 @@ export function BoardGrid({
               {Array.from({ length: BOARD_SIZE }, (_, x) => {
                 const coord: Coord = { x, y };
                 const cellState = getCellState(board, coord, showShips);
-                const isPreview = previewCells.has(`${x},${y}`);
+                const isPreview = previewCellSet.has(`${x},${y}`);
                 const isHighlighted = highlightedCell?.x === x && highlightedCell?.y === y;
+                const previewBg = preview
+                  ? preview.isValid
+                    ? 'rgba(46, 204, 113, 0.5)'
+                    : 'rgba(231, 76, 60, 0.5)'
+                  : undefined;
                 const bg = isHighlighted
                   ? '#f39c12'
-                  : isPreview
-                    ? '#2e86c1'
+                  : isPreview && previewBg
+                    ? previewBg
                     : CELL_COLORS[cellState];
                 const isClickable = interactive && onClick;
                 return (
                   <td
                     key={x}
+                    data-coord={`${x},${y}`}
                     onClick={() => isClickable && onClick(coord)}
+                    onMouseEnter={() => {
+                      if (interactive && onCellHover) {
+                        onCellHover(coord);
+                      }
+                    }}
                     style={{
                       width: 36,
                       height: 36,
@@ -115,14 +131,6 @@ export function BoardGrid({
                       fontSize: 16,
                       fontWeight: 'bold',
                       transition: 'background-color 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (isClickable) {
-                        (e.currentTarget as HTMLElement).style.opacity = '0.8';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.opacity = '1';
                     }}
                   >
                     {CELL_SYMBOLS[cellState]}
