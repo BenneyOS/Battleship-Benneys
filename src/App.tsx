@@ -8,10 +8,12 @@ import { BattleScoreboard } from './ui/components/BattleScoreboard';
 import { EnemyFleetChecklist } from './ui/components/EnemyFleetChecklist';
 import { AccuracyChip } from './ui/components/AccuracyChip';
 import { MuteButton } from './ui/components/MuteButton';
-import { SinkCelebration } from './ui/components/SinkCelebration';
+import { Celebrate } from './ui/components/Celebrate';
+import { VictoryScreen } from './ui/components/VictoryScreen';
 import { LogoHeader } from './ui/components/LogoHeader';
 import { deriveHeaderStatus } from './ui/headerStatus';
-import { deriveSinkCelebration } from './ui/sinkCelebration';
+import { deriveCelebrationFromShot, deriveMilestone, buildMilestoneCelebration, buildCelebration } from './ui/celebrationSystem';
+import type { CelebrationEvent } from './ui/celebrationSystem';
 import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
 import { setupProgress, fleetProgress, playerAccuracy, previewPlacement, enemyFleetStatus } from './engine/selectors';
@@ -34,6 +36,7 @@ function App() {
     aiPhase,
     highlightedCell,
     milestoneMessage,
+    crossedMilestones,
     lastShotResult,
     actions,
   } = useGameState();
@@ -54,6 +57,20 @@ function App() {
   const [previewAnchor, setPreviewAnchor] = useState<Coord | null>(null);
   const [touchAnchor, setTouchAnchor] = useState<Coord | null>(null);
 
+  // Fleet-ready beat tracking
+  const [fleetReadyFired, setFleetReadyFired] = useState(false);
+
+  // Celebration event — shared across all tiers
+  const [celebrationEvent, setCelebrationEvent] = useState<CelebrationEvent | null>(null);
+
+  // Track last sunk ship name for victory medal
+  const [lastSunkShip, setLastSunkShip] = useState<string | null>(null);
+
+  // Previous value tracking for render-time change detection
+  const [prevShot, setPrevShot] = useState(lastShotResult);
+  const [prevMilestoneMsg, setPrevMilestoneMsg] = useState(milestoneMessage);
+  const [prevIsDefeat, setPrevIsDefeat] = useState(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'r' || e.key === 'R') {
@@ -68,15 +85,14 @@ function App() {
   const isPlaying = state.game.phase === 'playing';
   const isGameOver = state.game.phase === 'gameOver';
   const allShipsPlaced = placementIndex >= FLEET.length;
+  const isVictory = isGameOver && state.game.winner === 'human';
+  const isDefeat = isGameOver && state.game.winner === 'ai';
 
   // Derive progress data from board state
   const setupProg = setupProgress(state.game.humanBoard, FLEET_DEF);
   const battleProg = fleetProgress(state.game.aiBoard);
   const accuracy = playerAccuracy(state.game.aiBoard);
   const enemyShipStatus = enemyFleetStatus(state.game.aiBoard);
-
-  // Derive sink celebration from last shot + fleet progress
-  const sinkCelebration = deriveSinkCelebration(lastShotResult, battleProg);
 
   // Derive header view-model from existing state
   const headerStatus = deriveHeaderStatus(
@@ -86,6 +102,45 @@ function App() {
     lastShotResult,
     state.game.winner as 'human' | 'ai' | null | undefined,
   );
+
+  // --- Celebration derivation (render-time change detection — no setState in effects) ---
+
+  // Shot-based celebration (micro hit / sink / victory)
+  if (lastShotResult !== prevShot) {
+    setPrevShot(lastShotResult);
+    const shotCeleb = deriveCelebrationFromShot(lastShotResult, battleProg);
+    if (shotCeleb) {
+      if (shotCeleb.tier === 'sink' && lastShotResult?.sunkShipName) {
+        setLastSunkShip(lastShotResult.sunkShipName);
+      }
+      setCelebrationEvent(shotCeleb);
+    } else if (lastShotResult?.actor === 'computer' && lastShotResult.outcome === 'hit') {
+      setCelebrationEvent(buildCelebration('micro', 'HIT'));
+    }
+  }
+
+  // Milestone celebration
+  if (milestoneMessage !== prevMilestoneMsg) {
+    setPrevMilestoneMsg(milestoneMessage);
+    if (milestoneMessage) {
+      const milestone = deriveMilestone(battleProg.sunk, battleProg.total, crossedMilestones);
+      if (milestone) {
+        setCelebrationEvent(buildMilestoneCelebration(milestone));
+      }
+    }
+  }
+
+  // Fleet-ready beat (phase-complete)
+  if (isSetup && allShipsPlaced && !fleetReadyFired) {
+    setFleetReadyFired(true);
+    setCelebrationEvent(buildCelebration('phase-complete', 'FLEET READY'));
+  }
+
+  // Defeat celebration
+  if (isDefeat && !prevIsDefeat) {
+    setPrevIsDefeat(true);
+    setCelebrationEvent(buildCelebration('defeat', 'DEFEAT'));
+  }
 
   // Compute preview based on current hover anchor
   const preview: PreviewResult | null =
@@ -136,6 +191,45 @@ function App() {
     // Invalid click is a no-op
   }, [currentShipLength, orientation, state.game.humanBoard, actions, touchAnchor]);
 
+  const handleReset = useCallback(() => {
+    actions.reset();
+    setFleetReadyFired(false);
+    setCelebrationEvent(null);
+    setLastSunkShip(null);
+    setPrevShot(null);
+    setPrevMilestoneMsg(null);
+    setPrevIsDefeat(false);
+  }, [actions]);
+
+  // --- Victory/Defeat screen ---
+  if (isGameOver) {
+    return (
+      <div className="game-layout" data-phase="gameOver">
+        {/* Atmosphere layers */}
+        <div className="atmosphere-texture" aria-hidden="true" />
+        <div className="atmosphere-shimmer" aria-hidden="true" />
+
+        <VictoryScreen
+          board={state.game.aiBoard}
+          fleetProgress={battleProg}
+          accuracy={accuracy}
+          enemyShips={enemyShipStatus}
+          lastSunkShipName={lastSunkShip}
+          isVictory={isVictory}
+          onNewGame={handleReset}
+        />
+
+        {/* Mute control */}
+        <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 200 }}>
+          <MuteButton muted={muted} onToggle={toggleMute} />
+        </div>
+
+        {/* Celebration overlay — routes through ONE shared component */}
+        <Celebrate event={celebrationEvent} muted={muted} />
+      </div>
+    );
+  }
+
   return (
     <div className="game-layout" data-phase={state.game.phase}>
       {/* Atmosphere layers */}
@@ -162,14 +256,8 @@ function App() {
           eventTier={headerStatus.eventTier}
         />
 
-        {isGameOver && (
-          <button onClick={actions.reset} className="btn-primary" style={{ marginTop: 10, borderRadius: 6 }}>
-            New Game
-          </button>
-        )}
-
         {/* Mute control */}
-        {(isPlaying || isGameOver) && (
+        {isPlaying && (
           <MuteButton muted={muted} onToggle={toggleMute} />
         )}
       </header>
@@ -239,7 +327,7 @@ function App() {
         )}
 
         {/* Companion panel: player fleet damage during play */}
-        {(isPlaying || isGameOver) && (
+        {isPlaying && (
           <div className="companion-panel" data-testid="player-companion-panel">
             <div style={{ fontSize: 13, fontFamily: 'var(--font-body)', color: 'var(--text-secondary)', textAlign: 'center' }}>
               Your fleet: {state.game.humanBoard.ships.filter((s) => {
@@ -268,7 +356,7 @@ function App() {
         </div>
 
         {/* Companion panel: enemy fleet damage + checklist */}
-        {(isPlaying || isGameOver) && (
+        {isPlaying && (
           <div className="companion-panel" data-testid="enemy-companion-panel">
             <BattleScoreboard progress={battleProg} milestoneMessage={milestoneMessage} />
             <EnemyFleetChecklist ships={enemyShipStatus} />
@@ -277,7 +365,7 @@ function App() {
       </section>
 
       {/* Legend — below the grid zones */}
-      {(isPlaying || isGameOver) && (
+      {isPlaying && (
         <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '12px 0', gap: 16, fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-muted)', position: 'relative', zIndex: 1 }}>
           <span>
             <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-miss)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)' }} />
@@ -296,8 +384,8 @@ function App() {
         </div>
       )}
 
-      {/* Sink celebration overlay */}
-      <SinkCelebration celebration={sinkCelebration} muted={muted} />
+      {/* Celebration overlay — ONE shared component for ALL tiers */}
+      <Celebrate event={celebrationEvent} muted={muted} />
     </div>
   );
 }

@@ -52,16 +52,21 @@ export function fleetProgress(targetBoard: Board): FleetProgressData {
 
 // ─── Milestone Logic ────────────────────────────────────────────────────────
 
-const THRESHOLDS = [50, 70, 90, 100] as const;
+/**
+ * Ship-count milestones for a 5-ship fleet.
+ * Only reachable counts: 0,1,2,3,4,5. Milestones fire at 3 ("over halfway")
+ * and 4 ("one to go"). Never keyed to unreachable percentages like 50/70/90.
+ */
+const SUNK_COUNT_MILESTONES = [3, 4] as const;
 
 /**
- * Returns the highest threshold crossed by the given percent,
- * or null if percent is below 50.
+ * Returns the sunk-count milestone crossed, or null if none.
+ * Keyed to ship count (not percent) — with 5 ships only 0/20/40/60/80/100% exist.
  */
-export function milestoneFor(percent: number): number | null {
+export function milestoneFor(sunkCount: number): number | null {
   let highest: number | null = null;
-  for (const t of THRESHOLDS) {
-    if (percent >= t) highest = t;
+  for (const t of SUNK_COUNT_MILESTONES) {
+    if (sunkCount >= t) highest = t;
   }
   return highest;
 }
