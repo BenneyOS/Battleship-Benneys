@@ -104,4 +104,50 @@ describe('Companion panel layout (§6.4)', () => {
     expect(text).not.toMatch(/origin/i);
     expect(text).not.toMatch(/position/i);
   });
+
+  it('board-container does NOT use aspect-ratio (prevents height cap that causes overflow into panel)', () => {
+    render(<App />);
+    const containers = document.querySelectorAll('.board-container');
+    containers.forEach((container) => {
+      const style = window.getComputedStyle(container);
+      // aspect-ratio must not be set — it caps the container height below the
+      // table content height, causing the board to visually overflow into the
+      // companion panel below.
+      expect(style.aspectRatio).not.toBe('1');
+      expect(style.aspectRatio).not.toBe('1 / 1');
+    });
+  });
+
+  it('player companion panel is a later sibling of board-container in DOM (setup phase)', () => {
+    render(<App />);
+    const playerZone = screen.getByTestId('zone-player');
+    const children = Array.from(playerZone.children);
+    const boardIdx = children.findIndex((el) => el.classList.contains('board-container'));
+    const panelIdx = children.findIndex((el) => el.getAttribute('data-testid') === 'player-companion-panel');
+    expect(boardIdx).toBeGreaterThanOrEqual(0);
+    expect(panelIdx).toBeGreaterThan(boardIdx);
+  });
+
+  it('enemy companion panel is a later sibling of board-container in DOM (play phase)', () => {
+    render(<App />);
+    fireEvent.click(screen.getByText('Auto-Place Ships'));
+    fireEvent.click(screen.getByText('Start Game'));
+
+    const enemyZone = screen.getByTestId('zone-enemy');
+    const children = Array.from(enemyZone.children);
+    const boardIdx = children.findIndex((el) => el.classList.contains('board-container'));
+    const panelIdx = children.findIndex((el) => el.getAttribute('data-testid') === 'enemy-companion-panel');
+    expect(boardIdx).toBeGreaterThanOrEqual(0);
+    expect(panelIdx).toBeGreaterThan(boardIdx);
+  });
+
+  it('board-container has no overflow-hiding styles that would clip content', () => {
+    render(<App />);
+    const containers = document.querySelectorAll('.board-container');
+    containers.forEach((container) => {
+      const style = window.getComputedStyle(container);
+      // overflow must be visible (or auto) so content is never clipped
+      expect(style.overflow).not.toBe('hidden');
+    });
+  });
 });
