@@ -13,14 +13,14 @@ export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboar
       <div style={{ fontSize: 14, marginBottom: 6 }}>
         You've sunk <strong>{sunk} of {total}</strong> ships
         {remaining > 0 && (
-          <span style={{ color: '#95a5a6' }}> — {remaining} more to go</span>
+          <span style={{ color: 'var(--text-secondary)' }}> — {remaining} more to go</span>
         )}
       </div>
       <div
         style={{
           width: 240,
           height: 8,
-          backgroundColor: '#2c3e50',
+          backgroundColor: 'var(--surface-edge)',
           borderRadius: 4,
           overflow: 'hidden',
           margin: '0 auto',
@@ -30,7 +30,7 @@ export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboar
           style={{
             width: `${percent}%`,
             height: '100%',
-            backgroundColor: percent === 100 ? '#27ae60' : '#e67e22',
+            backgroundColor: percent === 100 ? 'var(--success)' : 'var(--celebrate-hit)',
             borderRadius: 4,
             transition: 'width 0.3s ease',
           }}
@@ -41,7 +41,7 @@ export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboar
           aria-label={`${percent}% of enemy fleet destroyed`}
         />
       </div>
-      <div style={{ fontSize: 12, color: '#7f8c8d', marginTop: 4 }}>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
         {percent}% of the enemy fleet destroyed
       </div>
       {milestoneMessage && (
@@ -49,11 +49,11 @@ export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboar
           style={{
             marginTop: 8,
             padding: '6px 14px',
-            backgroundColor: '#1a3a2a',
-            border: '1px solid #27ae60',
+            backgroundColor: 'rgba(39, 174, 96, 0.12)',
+            border: '1px solid var(--success)',
             borderRadius: 6,
             fontSize: 13,
-            color: '#2ecc71',
+            color: 'var(--success-bright)',
             fontWeight: 500,
           }}
           role="alert"

@@ -7,7 +7,7 @@ interface TurnBannerProps {
 
 export function TurnBanner({ status, gamePhase }: TurnBannerProps) {
   const isPlayer = status.whoseTurn === 'player';
-  const color = isPlayer ? '#3498db' : '#e74c3c';
+  const color = isPlayer ? 'var(--side-player, #3498db)' : 'var(--side-enemy, #e74c3c)';
 
   const icon = gamePhase === 'setup'
     ? '\u2693'
