@@ -2,37 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { Board } from '../../engine/types';
 import { BOARD_SIZE } from '../../engine/types';
 import { getCellState } from '../../engine/board';
-import type { FleetProgressData, AccuracyData, ShipStatus } from '../../engine/selectors';
-
-// ─── SVG Ship Silhouettes ────────────────────────────────────────────────────
-
-const SHIP_SVGS: Record<string, { path: string; width: number; height: number }> = {
-  Carrier: {
-    path: 'M2 8 Q2 4 6 4 L44 4 Q48 4 48 8 L48 12 Q48 16 44 16 L6 16 Q2 16 2 12 Z M10 7 L40 7 L40 13 L10 13 Z',
-    width: 50,
-    height: 20,
-  },
-  Battleship: {
-    path: 'M3 8 L8 3 L32 3 Q38 3 38 8 L38 12 Q38 17 32 17 L8 17 L3 12 Z M10 6 L32 6 L32 14 L10 14 Z',
-    width: 40,
-    height: 20,
-  },
-  Cruiser: {
-    path: 'M2 10 L8 4 L22 4 Q28 4 28 10 Q28 16 22 16 L8 16 L2 10 Z',
-    width: 30,
-    height: 20,
-  },
-  Submarine: {
-    path: 'M4 10 Q4 5 10 5 L20 5 Q26 5 26 10 Q26 15 20 15 L10 15 Q4 15 4 10 Z M12 3 L14 3 L14 5 L12 5 Z',
-    width: 30,
-    height: 20,
-  },
-  Destroyer: {
-    path: 'M2 10 L6 5 L14 5 Q18 5 18 10 Q18 15 14 15 L6 15 L2 10 Z',
-    width: 20,
-    height: 20,
-  },
-};
+import type { FleetProgressData, AccuracyData } from '../../engine/selectors';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -40,7 +10,6 @@ interface VictoryScreenProps {
   board: Board;
   fleetProgress: FleetProgressData;
   accuracy: AccuracyData;
-  enemyShips: ShipStatus[];
   lastSunkShipName: string | null;
   isVictory: boolean;
   onNewGame: () => void;
@@ -48,7 +17,7 @@ interface VictoryScreenProps {
   animationMs?: number;
 }
 
-type CascadePhase = 'impact' | 'grid' | 'silhouettes' | 'hierarchy' | 'action';
+type CascadePhase = 'impact' | 'grid' | 'hierarchy' | 'action';
 
 const COLUMN_LABELS = 'ABCDEFGHIJ';
 
@@ -58,7 +27,6 @@ export function VictoryScreen({
   board,
   fleetProgress: progress,
   accuracy,
-  enemyShips,
   lastSunkShipName,
   isVictory,
   onNewGame,
@@ -71,21 +39,19 @@ export function VictoryScreen({
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
-    // Sequenced cascade: impact → grid → silhouettes → hierarchy → action
+    // Sequenced cascade: impact → grid → hierarchy → action
     timers.push(setTimeout(() => setPhase('grid'), duration));
-    timers.push(setTimeout(() => setPhase('silhouettes'), duration * 2));
-    timers.push(setTimeout(() => setPhase('hierarchy'), duration * 3));
-    timers.push(setTimeout(() => setPhase('action'), duration * 4));
+    timers.push(setTimeout(() => setPhase('hierarchy'), duration * 2));
+    timers.push(setTimeout(() => setPhase('action'), duration * 3));
 
     phaseTimers.current = timers;
     return () => timers.forEach(clearTimeout);
   }, [duration]);
 
-  const phaseIdx = ['impact', 'grid', 'silhouettes', 'hierarchy', 'action'].indexOf(phase);
+  const phaseIdx = ['impact', 'grid', 'hierarchy', 'action'].indexOf(phase);
   const showGrid = phaseIdx >= 1;
-  const showSilhouettes = phaseIdx >= 2;
-  const showHierarchy = phaseIdx >= 3;
-  const showAction = phaseIdx >= 4;
+  const showHierarchy = phaseIdx >= 2;
+  const showAction = phaseIdx >= 3;
 
   const tone = isVictory ? 'victory' : 'defeat';
 
@@ -105,8 +71,6 @@ export function VictoryScreen({
           <h3 className={`endgame-screen__grid-title endgame-screen__grid-title--${tone}`}>
             Enemy Waters
           </h3>
-          {/* Table + silhouettes wrapper — silhouettes are absolute-positioned
-              relative to this container, NOT to the grid (which includes the title). */}
           <div className="endgame-screen__table-wrap">
             <table className="endgame-screen__table">
               <thead>
@@ -138,54 +102,6 @@ export function VictoryScreen({
               </tbody>
             </table>
 
-            {/* Phase 3: SVG silhouettes over sunk ships */}
-            {showSilhouettes && (
-              <div className="endgame-screen__silhouettes" data-testid="endgame-silhouettes">
-                {board.ships.map((ship, i) => {
-                  const name = enemyShips[i]?.name ?? `Ship ${i + 1}`;
-                  const svg = SHIP_SVGS[name];
-                  if (!svg) return null;
-
-                  // Positioning accounts for non-uniform column widths:
-                  // coord column = 24px + 16px padding; header row = 24px;
-                  // data cells = 44px + 2px border = 46px each (border-collapse: separate).
-                  const coordColW = 40; // 24px width + 16px padding-right
-                  const headerRowH = 24; // column header row height
-                  const cellW = 46; // 44px cell + 2×1px border
-                  const cellH = 46;
-                  const tableW = coordColW + BOARD_SIZE * cellW;
-                  const tableH = headerRowH + BOARD_SIZE * cellH;
-
-                  const leftPct = ((coordColW + ship.origin.x * cellW) / tableW) * 100;
-                  const topPct = ((headerRowH + ship.origin.y * cellH) / tableH) * 100;
-                  const spanX = ship.orientation === 'horizontal' ? ship.length : 1;
-                  const spanY = ship.orientation === 'vertical' ? ship.length : 1;
-                  const wPct = ((spanX * cellW) / tableW) * 100;
-                  const hPct = ((spanY * cellH) / tableH) * 100;
-
-                  return (
-                    <svg
-                      key={i}
-                      className={`endgame-screen__ship-svg endgame-screen__ship-svg--${tone}`}
-                      data-testid={`ship-silhouette-${name.toLowerCase()}`}
-                      viewBox={`0 0 ${svg.width} ${svg.height}`}
-                      style={{
-                        position: 'absolute',
-                        left: `${leftPct}%`,
-                        top: `${topPct}%`,
-                        width: `${wPct}%`,
-                        height: `${hPct}%`,
-                        transform: ship.orientation === 'vertical' ? 'rotate(90deg)' : undefined,
-                        transformOrigin: ship.orientation === 'vertical' ? '50% 50%' : undefined,
-                      }}
-                      aria-label={`${name} silhouette`}
-                    >
-                      <path d={svg.path} />
-                    </svg>
-                  );
-                })}
-              </div>
-            )}
           </div>
         </div>
       )}
