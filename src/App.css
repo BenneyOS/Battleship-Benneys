@@ -1106,6 +1106,7 @@
   border: 3px solid var(--tone-cool);
   border-radius: 50%;
   box-shadow: 0 0 10px rgba(239, 83, 80, 0.3);
+  overflow: hidden;
 }
 
 .endgame-screen__defeat-icon::before,
