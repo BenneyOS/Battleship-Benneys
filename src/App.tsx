@@ -21,14 +21,12 @@ const FLEET_DEF: FleetDef[] = FLEET.map((length, i) => ({
 function App() {
   const {
     state,
-    message,
     placementIndex,
     orientation,
     setOrientation,
     currentShipLength,
     turn,
     aiPhase,
-    aiAnnouncement,
     highlightedCell,
     milestoneMessage,
     lastShotResult,
