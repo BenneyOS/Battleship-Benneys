@@ -143,12 +143,13 @@ export function VictoryScreen({
                 const svg = SHIP_SVGS[name];
                 if (!svg) return null;
 
-                const cellSize = 28;
-                const headerOffset = 24;
-                const left = ship.origin.x * cellSize + headerOffset;
-                const top = ship.origin.y * cellSize + headerOffset;
-                const w = ship.orientation === 'horizontal' ? ship.length * cellSize : cellSize;
-                const h = ship.orientation === 'vertical' ? ship.length * cellSize : cellSize;
+                // Use percentage-based positioning so silhouettes adapt to mobile cell sizes.
+                // The grid is (BOARD_SIZE + 1) units wide/tall (1 for header column/row).
+                const totalUnits = BOARD_SIZE + 1;
+                const leftPct = ((ship.origin.x + 1) / totalUnits) * 100;
+                const topPct = ((ship.origin.y + 1) / totalUnits) * 100;
+                const wPct = ((ship.orientation === 'horizontal' ? ship.length : 1) / totalUnits) * 100;
+                const hPct = ((ship.orientation === 'vertical' ? ship.length : 1) / totalUnits) * 100;
 
                 return (
                   <svg
@@ -158,12 +159,12 @@ export function VictoryScreen({
                     viewBox={`0 0 ${svg.width} ${svg.height}`}
                     style={{
                       position: 'absolute',
-                      left,
-                      top,
-                      width: w,
-                      height: h,
+                      left: `${leftPct}%`,
+                      top: `${topPct}%`,
+                      width: `${wPct}%`,
+                      height: `${hPct}%`,
                       transform: ship.orientation === 'vertical' ? 'rotate(90deg)' : undefined,
-                      transformOrigin: ship.orientation === 'vertical' ? `${cellSize / 2}px ${cellSize / 2}px` : undefined,
+                      transformOrigin: ship.orientation === 'vertical' ? '50% 50%' : undefined,
                     }}
                     aria-label={`${name} silhouette`}
                   >

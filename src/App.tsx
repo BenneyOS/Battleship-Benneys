@@ -12,7 +12,7 @@ import { Celebrate } from './ui/components/Celebrate';
 import { VictoryScreen } from './ui/components/VictoryScreen';
 import { LogoHeader } from './ui/components/LogoHeader';
 import { deriveHeaderStatus } from './ui/headerStatus';
-import { deriveCelebrationFromShot, deriveMilestone, buildMilestoneCelebration, buildCelebration } from './ui/celebrationSystem';
+import { deriveCelebrationFromShot, buildCelebration } from './ui/celebrationSystem';
 import type { CelebrationEvent } from './ui/celebrationSystem';
 import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
@@ -36,7 +36,6 @@ function App() {
     aiPhase,
     highlightedCell,
     milestoneMessage,
-    crossedMilestones,
     lastShotResult,
     actions,
   } = useGameState();
@@ -110,7 +109,7 @@ function App() {
     setPrevShot(lastShotResult);
     const shotCeleb = deriveCelebrationFromShot(lastShotResult, battleProg);
     if (shotCeleb) {
-      if (shotCeleb.tier === 'sink' && lastShotResult?.sunkShipName) {
+      if ((shotCeleb.tier === 'sink' || shotCeleb.tier === 'victory') && lastShotResult?.sunkShipName) {
         setLastSunkShip(lastShotResult.sunkShipName);
       }
       setCelebrationEvent(shotCeleb);
@@ -119,14 +118,11 @@ function App() {
     }
   }
 
-  // Milestone celebration
+  // Milestone celebration — milestoneMessage change IS the signal
   if (milestoneMessage !== prevMilestoneMsg) {
     setPrevMilestoneMsg(milestoneMessage);
     if (milestoneMessage) {
-      const milestone = deriveMilestone(battleProg.sunk, battleProg.total, crossedMilestones);
-      if (milestone) {
-        setCelebrationEvent(buildMilestoneCelebration(milestone));
-      }
+      setCelebrationEvent(buildCelebration('milestone', milestoneMessage));
     }
   }
 

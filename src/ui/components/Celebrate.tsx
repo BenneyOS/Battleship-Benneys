@@ -104,7 +104,8 @@ export function Celebrate({ event, muted, animationMs }: CelebrateProps) {
       clearTimeout(t3);
       clearTimeout(t4);
     };
-  }, [event, muted, animationMs]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event, animationMs]);
 
   if (phase === 'idle' || !event) return null;
 
