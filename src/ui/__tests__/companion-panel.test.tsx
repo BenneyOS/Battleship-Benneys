@@ -35,7 +35,7 @@ describe('Companion panel layout (§6.4)', () => {
 
     // Auto-place and start
     fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    fireEvent.click(screen.getByText('Start Battle'));
 
     const enemyPanel = screen.getByTestId('enemy-companion-panel');
     // Should have scoreboard (percent bar)
@@ -49,7 +49,7 @@ describe('Companion panel layout (§6.4)', () => {
 
     // Auto-place and start
     fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    fireEvent.click(screen.getByText('Start Battle'));
 
     const playerPanel = screen.getByTestId('player-companion-panel');
     expect(playerPanel.textContent).toContain('Your fleet:');
@@ -61,7 +61,7 @@ describe('Companion panel layout (§6.4)', () => {
 
     // Auto-place and start
     fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    fireEvent.click(screen.getByText('Start Battle'));
 
     const panel = screen.getByTestId('enemy-companion-panel');
     const style = window.getComputedStyle(panel);
@@ -79,7 +79,7 @@ describe('Companion panel layout (§6.4)', () => {
     render(<App />);
 
     fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    fireEvent.click(screen.getByText('Start Battle'));
 
     const checklist = screen.getByTestId('enemy-fleet-checklist');
     const items = checklist.querySelectorAll('li');
@@ -95,7 +95,7 @@ describe('Companion panel layout (§6.4)', () => {
     render(<App />);
 
     fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    fireEvent.click(screen.getByText('Start Battle'));
 
     const checklist = screen.getByTestId('enemy-fleet-checklist');
     // No coordinate patterns (e.g. "0,0" or "x:" or position info) in text
@@ -131,7 +131,7 @@ describe('Companion panel layout (§6.4)', () => {
   it('enemy companion panel is a later sibling of board-container in DOM (play phase)', () => {
     render(<App />);
     fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    fireEvent.click(screen.getByText('Start Battle'));
 
     const enemyZone = screen.getByTestId('zone-enemy');
     const children = Array.from(enemyZone.children);

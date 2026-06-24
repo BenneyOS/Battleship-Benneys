@@ -22,7 +22,7 @@ function makeBoard(ships: Ship[], shots: Set<string>): Board {
 function startGameAndFire() {
   render(<App />);
   fireEvent.click(screen.getByText('Auto-Place Ships'));
-  fireEvent.click(screen.getByText('Start Game'));
+  fireEvent.click(screen.getByText('Start Battle'));
 }
 
 describe('§5.2 Color-mapping tests', () => {

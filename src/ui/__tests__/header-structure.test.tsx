@@ -13,7 +13,7 @@ afterEach(() => {
 function startGame() {
   render(<App />);
   fireEvent.click(screen.getByText('Auto-Place Ships'));
-  fireEvent.click(screen.getByText('Start Game'));
+  fireEvent.click(screen.getByText('Start Battle'));
 }
 
 describe('§6.2 Structural / no-duplication tests', () => {

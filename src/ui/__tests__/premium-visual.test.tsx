@@ -15,7 +15,7 @@ afterEach(() => {
 function startGame() {
   render(<App />);
   fireEvent.click(screen.getByText('Auto-Place Ships'));
-  fireEvent.click(screen.getByText('Start Game'));
+  fireEvent.click(screen.getByText('Start Battle'));
 }
 
 /* ── §5.1 Token & contrast checks ────────────────────────────── */
