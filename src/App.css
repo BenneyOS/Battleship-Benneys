@@ -1,1 +1,108 @@
-/* No custom CSS needed — all styles are inline */
+/* Three-zone layout */
+:root {
+  --layout-breakpoint: 900px;
+}
+
+.game-layout {
+  min-height: 100vh;
+  background-color: #0d1b2a;
+  color: #ecf0f1;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  display: grid;
+  grid-template-areas:
+    'header header'
+    'player enemy';
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0;
+  padding: 0;
+}
+
+/* Central header bar */
+.zone-header {
+  grid-area: header;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 20px 12px;
+  background-color: #131f2e;
+  border-bottom: 2px solid #1e3a5f;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Player zone (left) */
+.zone-player {
+  grid-area: player;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border-right: 1px solid #1e3a5f;
+  border-left: 3px solid #2e86c1;
+  background-color: rgba(46, 134, 193, 0.03);
+}
+
+.zone-player .zone-label {
+  color: #2e86c1;
+}
+
+/* Enemy zone (right) */
+.zone-enemy {
+  grid-area: enemy;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border-right: 3px solid #e74c3c;
+  background-color: rgba(231, 76, 60, 0.03);
+}
+
+.zone-enemy .zone-label {
+  color: #e74c3c;
+}
+
+/* Zone labels */
+.zone-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Boards must stay square */
+.board-container {
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 1;
+}
+
+/* Responsive: single column below breakpoint */
+@media (max-width: 899px) {
+  .game-layout {
+    grid-template-areas:
+      'header'
+      'player'
+      'enemy';
+    grid-template-columns: 1fr;
+  }
+
+  .zone-player {
+    border-right: none;
+    border-left: 3px solid #2e86c1;
+  }
+
+  .zone-enemy {
+    border-right: none;
+    border-left: 3px solid #e74c3c;
+  }
+
+  .board-container {
+    max-width: 320px;
+  }
+}
