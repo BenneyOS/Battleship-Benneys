@@ -1,13 +1,14 @@
-import { useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGameState, SHIP_NAMES } from './app/useGameState';
 import { BoardGrid } from './ui/components/BoardGrid';
 import { TurnBanner } from './ui/components/TurnBanner';
 import { SetupProgress } from './ui/components/SetupProgress';
 import { BattleScoreboard } from './ui/components/BattleScoreboard';
+import { EnemyFleetChecklist } from './ui/components/EnemyFleetChecklist';
 import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
-import { setupProgress, fleetProgress } from './engine/selectors';
-import type { FleetDef } from './engine/selectors';
+import { setupProgress, fleetProgress, previewPlacement, enemyFleetStatus } from './engine/selectors';
+import type { FleetDef, PreviewResult } from './engine/selectors';
 import './App.css';
 
 const FLEET_DEF: FleetDef[] = FLEET.map((length, i) => ({
@@ -31,6 +32,10 @@ function App() {
     actions,
   } = useGameState();
 
+  // Placement preview state
+  const [previewAnchor, setPreviewAnchor] = useState<Coord | null>(null);
+  const [touchAnchor, setTouchAnchor] = useState<Coord | null>(null);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'r' || e.key === 'R') {
@@ -49,15 +54,56 @@ function App() {
   // Derive progress data from board state
   const setupProg = setupProgress(state.game.humanBoard, FLEET_DEF);
   const battleProg = fleetProgress(state.game.aiBoard);
+  const enemyShipStatus = enemyFleetStatus(state.game.aiBoard);
+
+  // Compute preview based on current hover anchor
+  const preview: PreviewResult | null =
+    isSetup && !allShipsPlaced && previewAnchor && currentShipLength
+      ? previewPlacement(state.game.humanBoard, previewAnchor, currentShipLength, orientation)
+      : null;
 
   // Enemy grid is interactive only when it's human's turn and AI is idle
   const enemyGridInteractive = isPlaying && turn === 'human' && aiPhase === 'idle';
 
-  const handleSetupClick = (coord: Coord) => {
-    if (currentShipLength) {
-      actions.placeShip({ origin: coord, orientation, length: currentShipLength });
+  const handleCellHover = useCallback((coord: Coord) => {
+    setPreviewAnchor(coord);
+  }, []);
+
+  const handleBoardLeave = useCallback(() => {
+    setPreviewAnchor(null);
+    setTouchAnchor(null);
+  }, []);
+
+  const handleSetupClick = useCallback((coord: Coord) => {
+    if (!currentShipLength) return;
+
+    // Touch support: first tap previews, second tap on same anchor commits
+    const isTouchDevice = 'ontouchstart' in window;
+    if (isTouchDevice) {
+      if (touchAnchor && touchAnchor.x === coord.x && touchAnchor.y === coord.y) {
+        // Second tap on same anchor — commit if valid
+        const p = previewPlacement(state.game.humanBoard, coord, currentShipLength, orientation);
+        if (p.isValid) {
+          actions.placeShip({ origin: coord, orientation, length: currentShipLength });
+          setPreviewAnchor(null);
+          setTouchAnchor(null);
+        }
+      } else {
+        // First tap or different cell — set preview
+        setTouchAnchor(coord);
+        setPreviewAnchor(coord);
+      }
+      return;
     }
-  };
+
+    // Desktop: click commits if valid (preview already showing)
+    const p = previewPlacement(state.game.humanBoard, coord, currentShipLength, orientation);
+    if (p.isValid) {
+      actions.placeShip({ origin: coord, orientation, length: currentShipLength });
+      setPreviewAnchor(null);
+    }
+    // Invalid click is a no-op
+  }, [currentShipLength, orientation, state.game.humanBoard, actions, touchAnchor]);
 
   return (
     <div className="game-layout">
@@ -152,47 +198,53 @@ function App() {
             board={state.game.humanBoard}
             showShips={true}
             onClick={isSetup && !allShipsPlaced ? handleSetupClick : undefined}
+            onCellHover={isSetup && !allShipsPlaced ? handleCellHover : undefined}
+            onBoardLeave={isSetup && !allShipsPlaced ? handleBoardLeave : undefined}
             label="Your Fleet"
             interactive={isSetup && !allShipsPlaced}
             highlightedCell={highlightedCell}
+            preview={preview}
           />
         </div>
 
-        {/* Setup Progress Bar — player's fleet readout */}
-        {isSetup && <SetupProgress progress={setupProg} />}
-
-        {/* Ship placement queue during setup */}
+        {/* Companion panel: setup progress */}
         {isSetup && (
-          <div style={{ marginTop: 12, display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {FLEET.map((length, i) => (
-              <div
-                key={i}
-                style={{
-                  padding: '3px 10px',
-                  borderRadius: 4,
-                  backgroundColor: i < placementIndex ? '#27ae60' : i === placementIndex ? '#2e86c1' : '#2c3e50',
-                  fontSize: 12,
-                  color: '#ecf0f1',
-                }}
-              >
-                {SHIP_NAMES[i]} ({length})
-                {i < placementIndex ? ' \u2713' : ''}
-              </div>
-            ))}
+          <div className="companion-panel" data-testid="player-companion-panel">
+            <SetupProgress progress={setupProg} />
+            {/* Ship placement queue */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginTop: 8 }}>
+              {FLEET.map((length, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: '3px 10px',
+                    borderRadius: 4,
+                    backgroundColor: i < placementIndex ? '#27ae60' : i === placementIndex ? '#2e86c1' : '#2c3e50',
+                    fontSize: 12,
+                    color: '#ecf0f1',
+                  }}
+                >
+                  {SHIP_NAMES[i]} ({length})
+                  {i < placementIndex ? ' \u2713' : ''}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Player fleet damage during play */}
+        {/* Companion panel: player fleet damage during play */}
         {(isPlaying || isGameOver) && (
-          <div style={{ marginTop: 12, fontSize: 13, color: '#95a5a6', textAlign: 'center' }}>
-            Your fleet: {state.game.humanBoard.ships.filter((s) => {
-              const cells = Array.from({ length: s.length }, (_, i) =>
-                s.orientation === 'horizontal'
-                  ? `${s.origin.x + i},${s.origin.y}`
-                  : `${s.origin.x},${s.origin.y + i}`
-              );
-              return cells.every((c) => state.game.humanBoard.shots.has(c));
-            }).length} lost
+          <div className="companion-panel" data-testid="player-companion-panel">
+            <div style={{ fontSize: 13, color: '#95a5a6', textAlign: 'center' }}>
+              Your fleet: {state.game.humanBoard.ships.filter((s) => {
+                const cells = Array.from({ length: s.length }, (_, i) =>
+                  s.orientation === 'horizontal'
+                    ? `${s.origin.x + i},${s.origin.y}`
+                    : `${s.origin.x},${s.origin.y + i}`
+                );
+                return cells.every((c) => state.game.humanBoard.shots.has(c));
+              }).length} lost
+            </div>
           </div>
         )}
       </section>
@@ -213,9 +265,12 @@ function App() {
           />
         </div>
 
-        {/* Battle Scoreboard — enemy fleet damage */}
+        {/* Companion panel: enemy fleet damage + checklist */}
         {(isPlaying || isGameOver) && (
-          <BattleScoreboard progress={battleProg} milestoneMessage={milestoneMessage} />
+          <div className="companion-panel" data-testid="enemy-companion-panel">
+            <BattleScoreboard progress={battleProg} milestoneMessage={milestoneMessage} />
+            <EnemyFleetChecklist ships={enemyShipStatus} />
+          </div>
         )}
       </section>
 

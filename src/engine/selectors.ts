@@ -1,5 +1,6 @@
-import type { Board } from './types';
-import { isSunk } from './board';
+import type { Board, Coord, Orientation } from './types';
+import { BOARD_SIZE } from './types';
+import { isSunk, placeShip } from './board';
 
 // ─── Feature 1: Setup Placement Progress ────────────────────────────────────
 
@@ -99,4 +100,84 @@ export function formatMove(
   if (result === 'miss') return `Computer fires at ${label} \u2014 Miss`;
   if (result === 'sunk') return `Computer fires at ${label} \u2014 Hit! Your ${sunkShipName} is sunk`;
   return `Computer fires at ${label} \u2014 Hit!`;
+}
+
+// ─── Placement Preview ──────────────────────────────────────────────────────
+
+/** Compute the cells a ship would occupy given anchor, length, orientation. */
+export function footprintCells(
+  anchor: Coord,
+  length: number,
+  orientation: Orientation,
+): Coord[] {
+  const cells: Coord[] = [];
+  for (let i = 0; i < length; i++) {
+    cells.push({
+      x: anchor.x + (orientation === 'horizontal' ? i : 0),
+      y: anchor.y + (orientation === 'vertical' ? i : 0),
+    });
+  }
+  return cells;
+}
+
+export interface PreviewResult {
+  cells: Coord[];
+  isValid: boolean;
+}
+
+/**
+ * Preview a placement: returns the footprint cells and whether placement is legal.
+ * Delegates validity to the engine's existing placeShip validation.
+ */
+export function previewPlacement(
+  board: Board,
+  anchor: Coord,
+  length: number,
+  orientation: Orientation,
+): PreviewResult {
+  const cells = footprintCells(anchor, length, orientation);
+
+  // Check bounds
+  const inBounds = cells.every(
+    (c) => c.x >= 0 && c.x < BOARD_SIZE && c.y >= 0 && c.y < BOARD_SIZE,
+  );
+  if (!inBounds) {
+    return { cells, isValid: false };
+  }
+
+  // Delegate full validation to existing engine placeShip
+  try {
+    placeShip(board, { origin: anchor, orientation, length });
+    return { cells, isValid: true };
+  } catch {
+    return { cells, isValid: false };
+  }
+}
+
+// ─── Enemy Fleet Status (Named Checklist) ───────────────────────────────────
+
+export interface ShipStatus {
+  name: string;
+  length: number;
+  sunk: boolean;
+}
+
+const SHIP_NAME_MAP: readonly string[] = [
+  'Carrier',
+  'Battleship',
+  'Cruiser',
+  'Submarine',
+  'Destroyer',
+];
+
+/**
+ * Returns status of each enemy ship: name, length, and sunk flag.
+ * Delegates to existing isSunk. Never exposes afloat ship positions.
+ */
+export function enemyFleetStatus(targetBoard: Board): ShipStatus[] {
+  return targetBoard.ships.map((ship, i) => ({
+    name: SHIP_NAME_MAP[i] ?? `Ship ${i + 1}`,
+    length: ship.length,
+    sunk: isSunk(targetBoard, ship),
+  }));
 }
