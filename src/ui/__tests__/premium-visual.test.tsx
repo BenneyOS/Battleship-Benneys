@@ -67,6 +67,32 @@ describe('§6.1 Token system & contrast', () => {
     expect(s0).not.toBe(s2);
   });
 
+  it('elevation steps have meaningful tonal separation (>= 10 lightness units)', () => {
+    const css = fs.readFileSync(
+      path.resolve(__dirname, '../../App.css'),
+      'utf-8',
+    );
+    const extract = (token: string) => {
+      const re = new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*(#[0-9a-fA-F]{6})`);
+      const m = css.match(re);
+      return m ? m[1].toLowerCase() : null;
+    };
+    const hexToLightness = (hex: string) => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
+    };
+    const s0 = extract('--surface-0')!;
+    const s1 = extract('--surface-1')!;
+    const s2 = extract('--surface-2')!;
+    const l0 = hexToLightness(s0);
+    const l1 = hexToLightness(s1);
+    const l2 = hexToLightness(s2);
+    expect(l1 - l0).toBeGreaterThanOrEqual(10);
+    expect(l2 - l1).toBeGreaterThanOrEqual(10);
+  });
+
   it('combat state tokens are mutually distinct', () => {
     const css = fs.readFileSync(
       path.resolve(__dirname, '../../App.css'),

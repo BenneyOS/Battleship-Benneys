@@ -6,15 +6,12 @@ interface BattleScoreboardProps {
 }
 
 export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboardProps) {
-  const { sunk, remaining, total, percent } = progress;
+  const { sunk, total, percent } = progress;
 
   return (
     <div style={{ marginBottom: 12, textAlign: 'center' }}>
       <div style={{ fontSize: 14, marginBottom: 6 }}>
         You've sunk <strong>{sunk} of {total}</strong> ships
-        {remaining > 0 && (
-          <span style={{ color: 'var(--text-secondary)' }}> — {remaining} more to go</span>
-        )}
       </div>
       <div
         style={{
@@ -41,9 +38,7 @@ export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboar
           aria-label={`${percent}% of enemy fleet destroyed`}
         />
       </div>
-      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-        {percent}% of the enemy fleet destroyed
-      </div>
+
       {milestoneMessage && (
         <div
           style={{

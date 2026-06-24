@@ -9,10 +9,10 @@
   --layout-breakpoint: 900px;
 
   /* ── Elevation / surface tokens ─────────────────────────────── */
-  --surface-0: #0e2233;     /* page base — deep mid-ocean              */
-  --surface-1: #162d46;     /* boards / panels — clearly lifted        */
-  --surface-2: #1e3a56;     /* cells / chips — brightest surface       */
-  --surface-edge: #2a5070;  /* 1px lighter border                      */
+  --surface-0: #0a1628;     /* page base — deepest navy                */
+  --surface-1: #1b3550;     /* boards / panels — clearly lifted        */
+  --surface-2: #2a4f72;     /* cells / chips — brightest surface       */
+  --surface-edge: #3d6d94;  /* 1px lighter border                      */
 
   /* ── Brand tokens (derived from logo) ──────────────────────── */
   --brand-cyan: #72cdd2;
@@ -152,7 +152,7 @@
 }
 
 .logo-header__img {
-  max-height: 72px;
+  max-height: 96px;
   width: auto;
   display: block;
   animation: logo-entrance 0.8s ease-out;
@@ -538,6 +538,6 @@
 
   /* Mobile logo: smaller */
   .logo-header__img {
-    max-height: 48px;
+    max-height: 64px;
   }
 }
