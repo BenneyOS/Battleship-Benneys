@@ -1,15 +1,14 @@
 // ─── Shared AudioContext (singleton, unlocked on first user gesture) ─────────
 // Browsers block AudioContext playback until a user gesture (click/tap) resumes
 // the context. This module creates ONE shared context and exposes unlockAudio()
-// for wiring to the first interaction.
+// for wiring to user interactions.
 
 let sharedAudioCtx: AudioContext | null = null;
-let audioUnlocked = false;
 
-export function getAudioContext(): AudioContext | null {
+function getOrCreateContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   try {
-    if (!sharedAudioCtx) {
+    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
       sharedAudioCtx = new AudioContext();
     }
     return sharedAudioCtx;
@@ -19,37 +18,44 @@ export function getAudioContext(): AudioContext | null {
 }
 
 /**
- * Call on any user gesture (click/tap) to resume a suspended AudioContext.
- * Browsers require a user interaction before audio can play.
+ * Call on EVERY user gesture (click/tap/keydown) to keep the AudioContext alive.
+ * Browsers may suspend the context after a period of silence; calling resume()
+ * on each gesture ensures it stays in 'running' state.
  */
 export function unlockAudio(): void {
-  if (audioUnlocked) return;
-  const ctx = getAudioContext();
-  if (ctx && ctx.state === 'suspended') {
+  const ctx = getOrCreateContext();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') {
     ctx.resume().catch(() => {});
   }
-  audioUnlocked = true;
 }
 
-/** Reset audio state (for tests / new game). */
+/** Reset audio state (for tests). */
 export function resetAudioContext(): void {
   if (sharedAudioCtx) {
     try { sharedAudioCtx.close(); } catch { /* noop */ }
   }
   sharedAudioCtx = null;
-  audioUnlocked = false;
 }
 
 export function playCelebrationSound(freq: number, duration: number, coolToned: boolean): void {
   if (freq === 0) return;
-  const ctx = getAudioContext();
+  const ctx = getOrCreateContext();
   if (!ctx) return;
 
-  // If context is suspended (no user gesture yet), try to resume
+  // If context is suspended, resume it and schedule sound after resume completes
   if (ctx.state === 'suspended') {
-    ctx.resume().catch(() => {});
+    ctx.resume().then(() => {
+      playOscillator(ctx, freq, duration, coolToned);
+    }).catch(() => {});
+    return;
   }
 
+  playOscillator(ctx, freq, duration, coolToned);
+}
+
+function playOscillator(ctx: AudioContext, freq: number, duration: number, coolToned: boolean): void {
+  if (ctx.state !== 'running') return;
   try {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();

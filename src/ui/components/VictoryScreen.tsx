@@ -105,85 +105,88 @@ export function VictoryScreen({
           <h3 className={`endgame-screen__grid-title endgame-screen__grid-title--${tone}`}>
             Enemy Waters
           </h3>
-          <table className="endgame-screen__table">
-            <thead>
-              <tr>
-                <th className="endgame-screen__coord" style={{ width: 24 }} />
-                {Array.from({ length: BOARD_SIZE }, (_, i) => (
-                  <th key={i} className="endgame-screen__coord endgame-screen__coord--col">
-                    {COLUMN_LABELS[i]}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: BOARD_SIZE }, (_, y) => (
-                <tr key={y}>
-                  <td className="endgame-screen__coord">{y + 1}</td>
-                  {Array.from({ length: BOARD_SIZE }, (_, x) => {
-                    const cellState = getCellState(board, { x, y }, true);
-                    return (
-                      <td
-                        key={x}
-                        className={`endgame-screen__cell endgame-screen__cell--${cellState}`}
-                        data-coord={`${x},${y}`}
-                      />
-                    );
-                  })}
+          {/* Table + silhouettes wrapper — silhouettes are absolute-positioned
+              relative to this container, NOT to the grid (which includes the title). */}
+          <div className="endgame-screen__table-wrap">
+            <table className="endgame-screen__table">
+              <thead>
+                <tr>
+                  <th className="endgame-screen__coord" style={{ width: 24 }} />
+                  {Array.from({ length: BOARD_SIZE }, (_, i) => (
+                    <th key={i} className="endgame-screen__coord endgame-screen__coord--col">
+                      {COLUMN_LABELS[i]}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {Array.from({ length: BOARD_SIZE }, (_, y) => (
+                  <tr key={y}>
+                    <td className="endgame-screen__coord">{y + 1}</td>
+                    {Array.from({ length: BOARD_SIZE }, (_, x) => {
+                      const cellState = getCellState(board, { x, y }, true);
+                      return (
+                        <td
+                          key={x}
+                          className={`endgame-screen__cell endgame-screen__cell--${cellState}`}
+                          data-coord={`${x},${y}`}
+                        />
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {/* Phase 3: SVG silhouettes over sunk ships */}
-          {showSilhouettes && (
-            <div className="endgame-screen__silhouettes" data-testid="endgame-silhouettes">
-              {board.ships.map((ship, i) => {
-                const name = enemyShips[i]?.name ?? `Ship ${i + 1}`;
-                const svg = SHIP_SVGS[name];
-                if (!svg) return null;
+            {/* Phase 3: SVG silhouettes over sunk ships */}
+            {showSilhouettes && (
+              <div className="endgame-screen__silhouettes" data-testid="endgame-silhouettes">
+                {board.ships.map((ship, i) => {
+                  const name = enemyShips[i]?.name ?? `Ship ${i + 1}`;
+                  const svg = SHIP_SVGS[name];
+                  if (!svg) return null;
 
-                // Positioning accounts for non-uniform column widths:
-                // coord column = 24px + 16px padding; header row = 24px;
-                // data cells = 44px + 2px border = 46px each (border-collapse: separate).
-                // Use CSS calc() so mobile overrides (32px cells) still work via the cascade.
-                const coordColW = 40; // 24px width + 16px padding-right
-                const headerRowH = 24; // column header row height
-                const cellW = 46; // 44px cell + 2×1px border
-                const cellH = 46;
-                const tableW = coordColW + BOARD_SIZE * cellW;
-                const tableH = headerRowH + BOARD_SIZE * cellH;
+                  // Positioning accounts for non-uniform column widths:
+                  // coord column = 24px + 16px padding; header row = 24px;
+                  // data cells = 44px + 2px border = 46px each (border-collapse: separate).
+                  const coordColW = 40; // 24px width + 16px padding-right
+                  const headerRowH = 24; // column header row height
+                  const cellW = 46; // 44px cell + 2×1px border
+                  const cellH = 46;
+                  const tableW = coordColW + BOARD_SIZE * cellW;
+                  const tableH = headerRowH + BOARD_SIZE * cellH;
 
-                const leftPct = ((coordColW + ship.origin.x * cellW) / tableW) * 100;
-                const topPct = ((headerRowH + ship.origin.y * cellH) / tableH) * 100;
-                const spanX = ship.orientation === 'horizontal' ? ship.length : 1;
-                const spanY = ship.orientation === 'vertical' ? ship.length : 1;
-                const wPct = ((spanX * cellW) / tableW) * 100;
-                const hPct = ((spanY * cellH) / tableH) * 100;
+                  const leftPct = ((coordColW + ship.origin.x * cellW) / tableW) * 100;
+                  const topPct = ((headerRowH + ship.origin.y * cellH) / tableH) * 100;
+                  const spanX = ship.orientation === 'horizontal' ? ship.length : 1;
+                  const spanY = ship.orientation === 'vertical' ? ship.length : 1;
+                  const wPct = ((spanX * cellW) / tableW) * 100;
+                  const hPct = ((spanY * cellH) / tableH) * 100;
 
-                return (
-                  <svg
-                    key={i}
-                    className={`endgame-screen__ship-svg endgame-screen__ship-svg--${tone}`}
-                    data-testid={`ship-silhouette-${name.toLowerCase()}`}
-                    viewBox={`0 0 ${svg.width} ${svg.height}`}
-                    style={{
-                      position: 'absolute',
-                      left: `${leftPct}%`,
-                      top: `${topPct}%`,
-                      width: `${wPct}%`,
-                      height: `${hPct}%`,
-                      transform: ship.orientation === 'vertical' ? 'rotate(90deg)' : undefined,
-                      transformOrigin: ship.orientation === 'vertical' ? '50% 50%' : undefined,
-                    }}
-                    aria-label={`${name} silhouette`}
-                  >
-                    <path d={svg.path} />
-                  </svg>
-                );
-              })}
-            </div>
-          )}
+                  return (
+                    <svg
+                      key={i}
+                      className={`endgame-screen__ship-svg endgame-screen__ship-svg--${tone}`}
+                      data-testid={`ship-silhouette-${name.toLowerCase()}`}
+                      viewBox={`0 0 ${svg.width} ${svg.height}`}
+                      style={{
+                        position: 'absolute',
+                        left: `${leftPct}%`,
+                        top: `${topPct}%`,
+                        width: `${wPct}%`,
+                        height: `${hPct}%`,
+                        transform: ship.orientation === 'vertical' ? 'rotate(90deg)' : undefined,
+                        transformOrigin: ship.orientation === 'vertical' ? '50% 50%' : undefined,
+                      }}
+                      aria-label={`${name} silhouette`}
+                    >
+                      <path d={svg.path} />
+                    </svg>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

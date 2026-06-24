@@ -760,6 +760,12 @@
   text-shadow: 0 0 8px rgba(100, 140, 180, 0.3);
 }
 
+/* Table + silhouette wrapper: silhouettes position relative to this, not the grid title */
+.endgame-screen__table-wrap {
+  position: relative;
+  display: inline-block;
+}
+
 .endgame-screen__table {
   border-collapse: separate;
   border-spacing: 0;
