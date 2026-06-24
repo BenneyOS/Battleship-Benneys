@@ -1270,6 +1270,7 @@
   .zone-player {
     border-right: none;
     border-left: 3px solid var(--side-player);
+    padding: 8px; /* tighter on mobile to fit setup above fold */
   }
 
   .zone-enemy {
@@ -1278,7 +1279,7 @@
   }
 
   .board-container {
-    max-width: 360px;
+    max-width: 320px;
   }
 
   /* Mobile logo: stacked, smaller */
@@ -1298,12 +1299,16 @@
   }
 
   /* Mobile setup controls: tighter spacing, full width */
+  .companion-panel {
+    margin-top: 8px; /* xs on mobile: tighter status→board gap */
+  }
+
   .setup-controls__tools {
     margin-top: 8px; /* xs on mobile */
   }
 
   .setup-controls__action {
-    margin-top: 24px; /* md on mobile: less separation needed */
+    margin-top: 16px; /* sm on mobile: fit above fold */
   }
 
   .btn-rotate {
