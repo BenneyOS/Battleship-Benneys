@@ -41,6 +41,7 @@ function App() {
     highlightedCell,
     milestoneMessage,
     lastShotResult,
+    turnCount,
     actions,
   } = useGameState();
 
@@ -267,24 +268,51 @@ function App() {
         {/* CSS/HTML Logo — no raster image */}
         <LogoHeader />
 
-        {/* PRIMARY: Turn Banner (non-interactive, animated handoff) */}
-        <TurnBanner
-          status={headerStatus}
-          gamePhase={state.game.phase}
-        />
-
-        {/* ACCURACY CHIP: own zone outside the banner */}
-        <AccuracyChip accuracy={accuracy} gamePhase={state.game.phase} />
-
-        {/* SECONDARY: Last-event line (tiered emphasis) */}
-        <EventLine
-          lastEvent={headerStatus.lastEvent}
-          eventTier={headerStatus.eventTier}
-        />
-
-        {/* Mute control */}
-        {isPlaying && (
-          <MuteButton muted={muted} onToggle={toggleMute} />
+        {isPlaying ? (
+          <div
+            className="hud-console"
+            data-turn={turn === 'human' ? 'player' : 'computer'}
+            data-testid="hud-console"
+          >
+            <div className="hud-console__zone hud-console__zone--turn">
+              <TurnBanner
+                status={headerStatus}
+                gamePhase={state.game.phase}
+              />
+            </div>
+            <div className="hud-console__divider" aria-hidden="true" />
+            <div className="hud-console__zone hud-console__zone--accuracy">
+              <AccuracyChip accuracy={accuracy} gamePhase={state.game.phase} />
+            </div>
+            <div className="hud-console__divider" aria-hidden="true" />
+            <div className="hud-console__zone hud-console__zone--turns">
+              <span className="hud-console__stat-value">{turnCount}</span>
+              <span className="hud-console__stat-label">TURNS</span>
+            </div>
+            <div className="hud-console__divider" aria-hidden="true" />
+            <div className="hud-console__zone hud-console__zone--action">
+              <EventLine
+                lastEvent={headerStatus.lastEvent}
+                eventTier={headerStatus.eventTier}
+              />
+            </div>
+            <div className="hud-console__divider" aria-hidden="true" />
+            <div className="hud-console__zone hud-console__zone--mute">
+              <MuteButton muted={muted} onToggle={toggleMute} />
+            </div>
+          </div>
+        ) : (
+          <>
+            <TurnBanner
+              status={headerStatus}
+              gamePhase={state.game.phase}
+            />
+            <AccuracyChip accuracy={accuracy} gamePhase={state.game.phase} />
+            <EventLine
+              lastEvent={headerStatus.lastEvent}
+              eventTier={headerStatus.eventTier}
+            />
+          </>
         )}
       </header>
 
