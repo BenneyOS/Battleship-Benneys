@@ -1,12 +1,57 @@
-/* Three-zone layout */
+/* ─── Premium Visual System: Token Definitions ──────────────────────── */
+/* All colors flow from these tokens — no ad-hoc hex in components.
+   Brand tokens sampled from the Benny's Battleship logo:
+     cyan  #72cdd2  (bright teal glow)
+     steel #3c5760  (mid-tone blue-grey)
+     navy  #132c3f  (deep navy)                                        */
+
 :root {
   --layout-breakpoint: 900px;
+
+  /* ── Elevation / surface tokens ─────────────────────────────── */
+  --surface-0: #0e2233;     /* page base — deep mid-ocean              */
+  --surface-1: #162d46;     /* boards / panels — clearly lifted        */
+  --surface-2: #1e3a56;     /* cells / chips — brightest surface       */
+  --surface-edge: #2a5070;  /* 1px lighter border                      */
+
+  /* ── Brand tokens (derived from logo) ──────────────────────── */
+  --brand-cyan: #72cdd2;
+  --brand-steel: #3c5760;
+  --brand-navy: #132c3f;
+
+  /* ── Accent / CTA ──────────────────────────────────────────── */
+  --accent-warm: #e8872e;   /* primary CTA — warm, high-saturation     */
+  --accent-warm-hover: #f09940;
+
+  /* ── Combat-state tokens ───────────────────────────────────── */
+  --state-miss: #3a4a5a;
+  --state-hit: #d4920b;
+  --state-sunk: #8b0000;
+
+  /* ── Text hierarchy ────────────────────────────────────────── */
+  --text-primary: #ecf0f1;
+  --text-secondary: #95a5a6;
+  --text-muted: #7f8c8d;
+
+  /* ── Side identity ─────────────────────────────────────────── */
+  --side-player: #3498db;
+  --side-enemy: #e74c3c;
+
+  /* ── Celebration ───────────────────────────────────────────── */
+  --celebrate-sunk: #e74c3c;
+  --celebrate-finale: #ffd700;
+  --celebrate-hit: #e67e22;
+
+  /* ── Success ───────────────────────────────────────────────── */
+  --success: #27ae60;
+  --success-bright: #2ecc71;
 }
 
+/* ─── Three-zone layout ──────────────────────────────────────────── */
 .game-layout {
   min-height: 100vh;
-  background-color: #0d1b2a;
-  color: #ecf0f1;
+  background-color: var(--surface-0);
+  color: var(--text-primary);
   font-family: 'Segoe UI', system-ui, sans-serif;
   display: grid;
   grid-template-areas:
@@ -16,54 +61,145 @@
   grid-template-rows: auto 1fr;
   gap: 0;
   padding: 0;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Central header bar */
+/* ─── Atmosphere: directional gradient ───────────────────────────── */
+/* Deeper at header (cradles logo glow), brighter downward            */
+.game-layout::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 18, 28, 0.6) 0%,
+    rgba(14, 34, 51, 0.15) 40%,
+    rgba(22, 45, 70, 0.05) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Atmosphere: vignette ───────────────────────────────────────── */
+.game-layout::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 70% at 50% 50%,
+    transparent 50%,
+    rgba(6, 12, 20, 0.45) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Atmosphere: faint noise texture ────────────────────────────── */
+.atmosphere-texture {
+  position: fixed;
+  inset: 0;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ─── Atmosphere: optional shimmer ───────────────────────────────── */
+.atmosphere-shimmer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 30%,
+    rgba(114, 205, 210, 0.02) 50%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  animation: shimmer-drift 12s ease-in-out infinite;
+}
+
+@keyframes shimmer-drift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* ─── Central header bar ─────────────────────────────────────────── */
 .zone-header {
   grid-area: header;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 16px 20px 12px;
-  background-color: #131f2e;
-  border-bottom: 2px solid #1e3a5f;
+  background-color: var(--brand-navy);
+  border-bottom: 1px solid var(--surface-edge);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-/* Player zone (left) */
+/* ─── Logo header ────────────────────────────────────────────────── */
+.logo-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0 8px;
+}
+
+.logo-header__img {
+  max-height: 72px;
+  width: auto;
+  display: block;
+  animation: logo-entrance 0.8s ease-out;
+  filter: drop-shadow(0 0 12px rgba(114, 205, 210, 0.3));
+}
+
+@keyframes logo-entrance {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── Player zone (left) ─────────────────────────────────────────── */
 .zone-player {
   grid-area: player;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 16px;
-  border-right: 1px solid #1e3a5f;
-  border-left: 3px solid #2e86c1;
-  background-color: rgba(46, 134, 193, 0.03);
+  border-right: 1px solid var(--surface-edge);
+  border-left: 3px solid var(--side-player);
+  background-color: rgba(52, 152, 219, 0.03);
+  position: relative;
+  z-index: 1;
 }
 
 .zone-player .zone-label {
-  color: #2e86c1;
+  color: var(--side-player);
 }
 
-/* Enemy zone (right) */
+/* ─── Enemy zone (right) ─────────────────────────────────────────── */
 .zone-enemy {
   grid-area: enemy;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 16px;
-  border-right: 3px solid #e74c3c;
+  border-right: 3px solid var(--side-enemy);
   background-color: rgba(231, 76, 60, 0.03);
+  position: relative;
+  z-index: 1;
 }
 
 .zone-enemy .zone-label {
-  color: #e74c3c;
+  color: var(--side-enemy);
 }
 
-/* Zone labels */
+/* ─── Zone labels ────────────────────────────────────────────────── */
 .zone-label {
   font-size: 11px;
   font-weight: 600;
@@ -83,13 +219,13 @@
   max-width: 420px;
 }
 
-/* Companion progress panels — in normal flow, never overlapping boards */
+/* ─── Companion progress panels ──────────────────────────────────── */
 .companion-panel {
   margin-top: 16px;
   padding: 12px 16px;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.03);
-  border: 1px solid #1e3a5f;
+  background-color: var(--surface-1);
+  border: 1px solid var(--surface-edge);
   width: 100%;
   max-width: 420px;
 }
@@ -107,12 +243,12 @@
 
 .turn-banner--player {
   background-color: #1a3a5c;
-  border-color: #3498db;
+  border-color: var(--side-player);
 }
 
 .turn-banner--computer {
   background-color: #3c1a1a;
-  border-color: #e74c3c;
+  border-color: var(--side-enemy);
 }
 
 .turn-banner__main {
@@ -136,7 +272,7 @@
 
 .turn-banner__prompt {
   font-size: 13px;
-  color: #95a5a6;
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
@@ -156,7 +292,7 @@
   margin-top: 6px;
   padding: 4px 16px;
   font-size: 13px;
-  color: #7f8c8d;
+  color: var(--text-muted);
   text-align: center;
   border-radius: 4px;
   transition: color 0.3s ease, background-color 0.3s ease;
@@ -165,17 +301,17 @@
 }
 
 .event-line--miss {
-  color: #7f8c8d;
+  color: var(--text-muted);
 }
 
 .event-line--hit {
-  color: #e67e22;
+  color: var(--celebrate-hit);
   font-weight: 600;
   animation: event-flash 0.4s ease;
 }
 
 .event-line--sunk {
-  color: #e74c3c;
+  color: var(--celebrate-sunk);
   font-weight: 700;
   background-color: rgba(231, 76, 60, 0.12);
   animation: event-sunk 0.6s ease;
@@ -186,7 +322,7 @@
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 2px;
-  color: #e74c3c;
+  color: var(--celebrate-sunk);
   margin-bottom: 2px;
 }
 
@@ -211,8 +347,8 @@
   gap: 6px;
   padding: 4px 14px;
   border-radius: 20px;
-  background-color: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--surface-2);
+  border: 1px solid var(--surface-edge);
   margin-top: 8px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -224,7 +360,7 @@
 .accuracy-chip__value {
   font-size: 18px;
   font-weight: 700;
-  color: #ecf0f1;
+  color: var(--text-primary);
   letter-spacing: 1px;
   min-width: 36px;
   text-align: center;
@@ -233,7 +369,7 @@
 .accuracy-chip__label {
   font-size: 9px;
   font-weight: 600;
-  color: #7f8c8d;
+  color: var(--text-muted);
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
@@ -262,9 +398,9 @@
   margin-top: 6px;
   padding: 4px 10px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #ecf0f1;
+  border: 1px solid var(--surface-edge);
+  background-color: var(--surface-2);
+  color: var(--text-primary);
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -290,7 +426,7 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   text-align: center;
-  color: #e74c3c;
+  color: var(--celebrate-sunk);
   text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
   animation: callout-enter 0.4s ease-out;
 }
@@ -314,12 +450,12 @@
   width: var(--size, 4px);
   height: var(--size, 4px);
   border-radius: 50%;
-  background-color: #e74c3c;
+  background-color: var(--celebrate-sunk);
   animation: particle-burst 0.8s ease-out forwards;
 }
 
 .sink-celebration--finale .sink-celebration__particle {
-  background-color: #ffd700;
+  background-color: var(--celebrate-finale);
 }
 
 .sink-celebration__callout--intensity-1 { font-size: 20px; }
@@ -329,7 +465,7 @@
 .sink-celebration__callout--intensity-5 { font-size: 36px; }
 
 .sink-celebration--finale .sink-celebration__callout {
-  color: #ffd700;
+  color: var(--celebrate-finale);
   text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
 }
 
@@ -365,9 +501,18 @@
     transform: none !important;
     box-shadow: none !important;
   }
+
+  /* Suppress atmosphere motion + logo entrance; keep static visuals */
+  .atmosphere-shimmer {
+    animation: none !important;
+  }
+
+  .logo-header__img {
+    animation: none !important;
+  }
 }
 
-/* Responsive: single column below breakpoint */
+/* ─── Responsive: single column below breakpoint ─────────────────── */
 @media (max-width: 899px) {
   .game-layout {
     grid-template-areas:
@@ -379,15 +524,20 @@
 
   .zone-player {
     border-right: none;
-    border-left: 3px solid #2e86c1;
+    border-left: 3px solid var(--side-player);
   }
 
   .zone-enemy {
     border-right: none;
-    border-left: 3px solid #e74c3c;
+    border-left: 3px solid var(--side-enemy);
   }
 
   .board-container {
     max-width: 360px;
+  }
+
+  /* Mobile logo: smaller */
+  .logo-header__img {
+    max-height: 48px;
   }
 }

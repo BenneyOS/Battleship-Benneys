@@ -12,7 +12,7 @@ export function SetupProgress({ progress }: SetupProgressProps) {
       <div style={{ fontSize: 14, marginBottom: 6 }}>
         <strong>{placed} of {total}</strong> ships placed
         {nextShip && (
-          <span style={{ color: '#95a5a6', marginLeft: 8 }}>
+          <span style={{ color: 'var(--text-secondary)', marginLeft: 8 }}>
             Next: {nextShip.name} ({nextShip.length})
           </span>
         )}
@@ -21,7 +21,7 @@ export function SetupProgress({ progress }: SetupProgressProps) {
         style={{
           width: 240,
           height: 8,
-          backgroundColor: '#2c3e50',
+          backgroundColor: 'var(--surface-edge)',
           borderRadius: 4,
           overflow: 'hidden',
           margin: '0 auto',
@@ -31,7 +31,7 @@ export function SetupProgress({ progress }: SetupProgressProps) {
           style={{
             width: `${percent}%`,
             height: '100%',
-            backgroundColor: percent === 100 ? '#27ae60' : '#2e86c1',
+            backgroundColor: percent === 100 ? 'var(--success)' : 'var(--side-player)',
             borderRadius: 4,
             transition: 'width 0.3s ease',
           }}

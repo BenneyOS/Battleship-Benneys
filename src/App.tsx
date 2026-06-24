@@ -15,6 +15,7 @@ import { FLEET } from './engine/types';
 import type { Coord } from './engine/types';
 import { setupProgress, fleetProgress, playerAccuracy, previewPlacement, enemyFleetStatus } from './engine/selectors';
 import type { FleetDef, PreviewResult } from './engine/selectors';
+import logoSrc from './assets/logo.png';
 import './App.css';
 
 const FLEET_DEF: FleetDef[] = FLEET.map((length, i) => ({
@@ -137,14 +138,20 @@ function App() {
 
   return (
     <div className="game-layout">
+      {/* Atmosphere layers */}
+      <div className="atmosphere-texture" aria-hidden="true" />
+      <div className="atmosphere-shimmer" aria-hidden="true" />
+
       {/* ===== CENTRAL HEADER BAR ===== */}
       <header className="zone-header" data-testid="zone-header">
-        <h1 style={{ fontSize: 28, margin: '0 0 4px', letterSpacing: 2 }}>
-          BATTLESHIP
-        </h1>
-        <p style={{ color: '#7f8c8d', margin: '0 0 12px', fontSize: 13 }}>
-          Benney's Edition
-        </p>
+        <div className="logo-header">
+          <img
+            src={logoSrc}
+            alt="Benny's Battleship"
+            className="logo-header__img"
+            data-testid="logo-header"
+          />
+        </div>
 
         {/* PRIMARY: Turn Banner (non-interactive, animated handoff) */}
         <TurnBanner
@@ -166,17 +173,17 @@ function App() {
           <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
               onClick={actions.autoPlaceHumanFleet}
-              style={buttonStyle}
+              style={buttonStyleSecondary}
             >
               Auto-Place Ships
             </button>
             {allShipsPlaced && (
-              <button onClick={actions.startPlaying} style={buttonStylePrimary}>
+              <button onClick={actions.startPlaying} style={buttonStylePrimary} className="btn-primary">
                 Start Game
               </button>
             )}
             {!allShipsPlaced && (
-              <span style={{ color: '#95a5a6', fontSize: 13, lineHeight: '36px' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: '36px' }}>
                 Orientation: <strong>{orientation}</strong> (press R to toggle)
               </span>
             )}
@@ -184,7 +191,7 @@ function App() {
         )}
 
         {isGameOver && (
-          <button onClick={actions.reset} style={{ ...buttonStylePrimary, marginTop: 10 }}>
+          <button onClick={actions.reset} style={{ ...buttonStylePrimary, marginTop: 10 }} className="btn-primary">
             New Game
           </button>
         )}
@@ -227,9 +234,9 @@ function App() {
                   style={{
                     padding: '3px 10px',
                     borderRadius: 4,
-                    backgroundColor: i < placementIndex ? '#27ae60' : i === placementIndex ? '#2e86c1' : '#2c3e50',
+                    backgroundColor: i < placementIndex ? 'var(--success)' : i === placementIndex ? 'var(--side-player)' : 'var(--surface-1)',
                     fontSize: 12,
-                    color: '#ecf0f1',
+                    color: 'var(--text-primary)',
                   }}
                 >
                   {SHIP_NAMES[i]} ({length})
@@ -243,7 +250,7 @@ function App() {
         {/* Companion panel: player fleet damage during play */}
         {(isPlaying || isGameOver) && (
           <div className="companion-panel" data-testid="player-companion-panel">
-            <div style={{ fontSize: 13, color: '#95a5a6', textAlign: 'center' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center' }}>
               Your fleet: {state.game.humanBoard.ships.filter((s) => {
                 const cells = Array.from({ length: s.length }, (_, i) =>
                   s.orientation === 'horizontal'
@@ -284,17 +291,17 @@ function App() {
 
       {/* Legend — below the grid zones */}
       {(isPlaying || isGameOver) && (
-        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '12px 0', gap: 16, fontSize: 12, color: '#7f8c8d' }}>
+        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '12px 0', gap: 16, fontSize: 12, color: 'var(--text-muted)', position: 'relative', zIndex: 1 }}>
           <span>
-            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#3a4a5a', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }} />
+            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-miss)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)' }} />
             Miss
           </span>
           <span>
-            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#d4920b', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }} />
+            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-hit)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)' }} />
             Hit
           </span>
           <span>
-            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: '#8b0000', verticalAlign: 'middle', marginRight: 4, border: '1px solid #2c3e50' }}>
+            <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-sunk)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)' }}>
               <span style={{ fontSize: 10, lineHeight: '14px', display: 'block', textAlign: 'center' }}>☠</span>
             </span>
             Sunk
@@ -308,21 +315,23 @@ function App() {
   );
 }
 
-const buttonStyle: React.CSSProperties = {
+const buttonStyleSecondary: React.CSSProperties = {
   padding: '8px 18px',
   fontSize: 14,
-  border: '1px solid #4a6fa5',
+  border: '1px solid var(--surface-edge, #2a5070)',
   borderRadius: 6,
-  backgroundColor: '#1b2838',
-  color: '#ecf0f1',
+  backgroundColor: 'var(--surface-1, #162d46)',
+  color: 'var(--text-primary, #ecf0f1)',
   cursor: 'pointer',
 };
 
 const buttonStylePrimary: React.CSSProperties = {
-  ...buttonStyle,
-  backgroundColor: '#2e86c1',
-  borderColor: '#2e86c1',
+  ...buttonStyleSecondary,
+  backgroundColor: 'var(--accent-warm, #e8872e)',
+  borderColor: 'var(--accent-warm, #e8872e)',
   fontWeight: 600,
+  color: '#ffffff',
+  boxShadow: '0 0 12px rgba(232, 135, 46, 0.3)',
 };
 
 export default App;

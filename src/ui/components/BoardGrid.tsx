@@ -21,11 +21,11 @@ interface BoardGridProps {
 }
 
 const CELL_COLORS: Record<CellState, string> = {
-  empty: '#1a2a3a',
+  empty: 'var(--surface-2, #1e3a56)',
   ship: '#4a7c59',
-  miss: '#3a4a5a',
-  hit: '#d4920b',
-  sunk: '#8b0000',
+  miss: 'var(--state-miss, #3a4a5a)',
+  hit: 'var(--state-hit, #d4920b)',
+  sunk: 'var(--state-sunk, #8b0000)',
 };
 
 const CELL_SYMBOLS: Record<CellState, string> = {
@@ -58,7 +58,7 @@ export function BoardGrid({
 
   return (
     <div style={{ display: 'inline-block', margin: '0 16px' }} onMouseLeave={onBoardLeave}>
-      <h3 style={{ textAlign: 'center', color: '#ecf0f1', margin: '0 0 8px' }}>{label}</h3>
+      <h3 style={{ textAlign: 'center', color: 'var(--text-primary, #ecf0f1)', margin: '0 0 8px' }}>{label}</h3>
       <table style={{ borderCollapse: 'collapse' }}>
         <thead>
           <tr>
@@ -70,7 +70,7 @@ export function BoardGrid({
                   width: 36,
                   height: 24,
                   textAlign: 'center',
-                  color: '#95a5a6',
+                  color: 'var(--text-secondary, #95a5a6)',
                   fontSize: 12,
                   fontWeight: 600,
                 }}
@@ -86,7 +86,7 @@ export function BoardGrid({
               <td
                 style={{
                   textAlign: 'center',
-                  color: '#95a5a6',
+                  color: 'var(--text-secondary, #95a5a6)',
                   fontSize: 12,
                   fontWeight: 600,
                   width: 30,
@@ -125,9 +125,9 @@ export function BoardGrid({
                       height: 36,
                       textAlign: 'center',
                       backgroundColor: bg,
-                      border: '1px solid #2c3e50',
+                      border: '1px solid var(--surface-edge, #2a5070)',
                       cursor: isClickable ? 'pointer' : 'default',
-                      color: cellState === 'miss' ? '#7f8c8d' : '#ecf0f1',
+                      color: cellState === 'miss' ? 'var(--text-muted, #7f8c8d)' : 'var(--text-primary, #ecf0f1)',
                       fontSize: 16,
                       fontWeight: 'bold',
                       transition: 'background-color 0.15s',
