@@ -240,7 +240,6 @@ function App() {
           board={state.game.aiBoard}
           fleetProgress={battleProg}
           accuracy={accuracy}
-          enemyShips={enemyShipStatus}
           lastSunkShipName={lastSunkShip}
           isVictory={isVictory}
           onNewGame={handleReset}

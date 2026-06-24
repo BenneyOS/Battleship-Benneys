@@ -699,7 +699,7 @@
 
 /* ═══════════════════════════════════════════════════════════════════════
    ENDGAME SCREEN — Victory (gold) & Defeat (cool blue)
-   Single centered Enemy Waters grid, SVG silhouettes, medals, cascade.
+   Single centered Enemy Waters grid, medals, cascade.
    ═══════════════════════════════════════════════════════════════════════ */
 /* ── Spacing tokens (8px system) ────────────────────────────────────── */
 /* xs=8  sm=16  md=24  lg=32  xl=48  2xl=64                             */
@@ -787,7 +787,6 @@
   text-shadow: 0 0 8px rgba(100, 140, 180, 0.3);
 }
 
-/* Table + silhouette wrapper: silhouettes position relative to this, not the grid title */
 .endgame-screen__table-wrap {
   position: relative;
   display: inline-block;
@@ -829,37 +828,6 @@
 .endgame-screen__cell--miss { background-color: var(--state-miss); }
 .endgame-screen__cell--hit { background-color: var(--state-hit); box-shadow: 0 0 4px var(--state-hit); }
 .endgame-screen__cell--sunk { background-color: var(--state-sunk); box-shadow: 0 0 4px var(--state-sunk); }
-
-/* SVG silhouettes */
-.endgame-screen__silhouettes {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  animation: silhouettes-reveal 0.6s ease-out;
-}
-
-@keyframes silhouettes-reveal {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-.endgame-screen__ship-svg {
-  opacity: 0.85;
-}
-
-.endgame-screen__ship-svg--victory path {
-  fill: rgba(255, 215, 64, 0.6);
-  stroke: rgba(255, 215, 64, 0.8);
-  stroke-width: 0.5;
-  filter: drop-shadow(0 0 3px rgba(255, 215, 64, 0.4));
-}
-
-.endgame-screen__ship-svg--defeat path {
-  fill: rgba(100, 140, 180, 0.4);
-  stroke: rgba(100, 140, 180, 0.6);
-  stroke-width: 0.5;
-  filter: drop-shadow(0 0 3px rgba(100, 140, 180, 0.3));
-}
 
 /* Hierarchy cascade — 8px spacing system */
 .endgame-screen__hierarchy {
@@ -1135,7 +1103,6 @@
   /* Endgame screen: show all content instantly */
   .endgame-screen,
   .endgame-screen__grid,
-  .endgame-screen__silhouettes,
   .endgame-screen__hierarchy,
   .endgame-screen__action {
     animation: none !important;
