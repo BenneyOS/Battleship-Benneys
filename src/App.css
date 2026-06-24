@@ -95,6 +95,48 @@
   overflow: hidden;
 }
 
+/* ── Phase-aware layout: setup = player dominant ──────────────── */
+.game-layout[data-phase="setup"] {
+  grid-template-columns: 3fr 1fr;
+}
+
+.game-layout[data-phase="setup"] .zone-enemy {
+  opacity: 0.35;
+  filter: saturate(0.3);
+  pointer-events: none;
+}
+
+.game-layout[data-phase="setup"] .zone-enemy .board-bezel {
+  position: relative;
+}
+
+.game-layout[data-phase="setup"] .zone-enemy .board-bezel::after {
+  content: 'Locked until battle';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  background: rgba(15, 52, 96, 0.5);
+  border-radius: 6px;
+  z-index: 2;
+}
+
+/* ── Phase-aware reflow transition ────────────────────────────── */
+.game-layout {
+  transition: grid-template-columns 0.6s ease;
+}
+
+.zone-player,
+.zone-enemy {
+  transition: opacity 0.6s ease, filter 0.6s ease;
+}
+
 /* ── Atmosphere: vignette ─────────────────────────────────────────── */
 .game-layout::before {
   content: '';
@@ -266,10 +308,6 @@
   z-index: 1;
 }
 
-.zone-player .zone-label {
-  color: var(--side-player);
-}
-
 /* ═══════════════════════════════════════════════════════════════════════
    ENEMY ZONE (RIGHT)
    ═══════════════════════════════════════════════════════════════════════ */
@@ -285,23 +323,8 @@
   z-index: 1;
 }
 
-.zone-enemy .zone-label {
-  color: var(--side-enemy);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   ZONE LABELS — arcade display font
-   ═══════════════════════════════════════════════════════════════════════ */
-.zone-label {
-  font-family: var(--font-display);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+/* zone-label class removed per subtraction pass — 'YOUR SIDE / ENEMY SIDE'
+   eyebrows removed; they duplicate the board title text directly below */
 
 /* Boards size naturally — no aspect-ratio constraint */
 .board-container {
@@ -310,7 +333,8 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   BOARD BEZEL — glowing cyan arcade cabinet feel
+   BOARD BEZEL — layered/soft glow (multi-step shadow falloff)
+   Refined from flat ring → intentional light via 4-layer shadow cascade
    ═══════════════════════════════════════════════════════════════════════ */
 .board-bezel {
   border: 2px solid var(--neon-cyan);
@@ -318,9 +342,11 @@
   padding: 8px;
   background-color: rgba(27, 79, 114, 0.6);
   box-shadow:
-    0 0 8px rgba(0, 229, 255, 0.3),
-    0 0 20px rgba(0, 229, 255, 0.1),
-    inset 0 0 8px rgba(0, 229, 255, 0.05);
+    0 0 4px rgba(0, 229, 255, 0.5),
+    0 0 12px rgba(0, 229, 255, 0.25),
+    0 0 24px rgba(0, 229, 255, 0.12),
+    0 0 48px rgba(0, 229, 255, 0.06),
+    inset 0 0 6px rgba(0, 229, 255, 0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -618,15 +644,57 @@
   border-color: var(--warm-cta) !important;
   color: var(--text-primary) !important;
   font-family: var(--font-display) !important;
-  font-size: 11px !important;
-  letter-spacing: 1px;
-  box-shadow: 0 0 15px rgba(255, 143, 0, 0.35) !important;
+  font-size: 12px !important;
+  letter-spacing: 2px;
+  padding: 14px 32px !important;
+  box-shadow:
+    0 0 6px rgba(255, 143, 0, 0.5),
+    0 0 16px rgba(255, 143, 0, 0.3),
+    0 0 32px rgba(255, 143, 0, 0.15) !important;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+/* Play glyph on Start Game via CSS ::before (keeps text content clean for tests) */
+.btn-start-game::before {
+  content: '\25b6\00a0';
+}
+
 .btn-primary:hover {
-  box-shadow: 0 0 25px rgba(255, 143, 0, 0.5) !important;
-  transform: scale(1.02);
+  box-shadow:
+    0 0 8px rgba(255, 143, 0, 0.6),
+    0 0 24px rgba(255, 143, 0, 0.4),
+    0 0 48px rgba(255, 143, 0, 0.2) !important;
+  transform: scale(1.03);
+}
+
+/* ── Secondary button (subordinate, e.g. Auto-Place) ─────────── */
+.btn-secondary {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  border: 1px solid var(--surface-edge);
+  border-radius: 6px;
+  background-color: rgba(27, 79, 114, 0.5);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(27, 79, 114, 0.8);
+  border-color: var(--neon-cyan);
+  color: var(--text-primary);
+}
+
+/* ── Anchored CTA zone: bottom of setup flow ─────────────────── */
+.setup-cta-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  width: 100%;
+  max-width: 420px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -657,6 +725,20 @@
   .logo-lockup {
     animation: none !important;
   }
+
+  /* Phase-aware reflow: instant, no animated transition */
+  .zone-player,
+  .zone-enemy {
+    transition: none !important;
+  }
+
+  .game-layout {
+    transition: none !important;
+  }
+
+  .game-layout[data-phase="setup"] .zone-enemy {
+    transition: none !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -668,6 +750,11 @@
       'header'
       'player'
       'enemy';
+    grid-template-columns: 1fr;
+  }
+
+  /* Setup phase: single column, no grid ratio override */
+  .game-layout[data-phase="setup"] {
     grid-template-columns: 1fr;
   }
 

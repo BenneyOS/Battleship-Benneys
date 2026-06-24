@@ -137,7 +137,7 @@ function App() {
   }, [currentShipLength, orientation, state.game.humanBoard, actions, touchAnchor]);
 
   return (
-    <div className="game-layout">
+    <div className="game-layout" data-phase={state.game.phase}>
       {/* Atmosphere layers */}
       <div className="atmosphere-texture" aria-hidden="true" />
       <div className="atmosphere-shimmer" aria-hidden="true" />
@@ -162,30 +162,8 @@ function App() {
           eventTier={headerStatus.eventTier}
         />
 
-        {/* Setup controls in header */}
-        {isSetup && (
-          <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button
-              onClick={actions.autoPlaceHumanFleet}
-              style={buttonStyleSecondary}
-            >
-              Auto-Place Ships
-            </button>
-            {allShipsPlaced && (
-              <button onClick={actions.startPlaying} style={buttonStylePrimary} className="btn-primary">
-                Start Game
-              </button>
-            )}
-            {!allShipsPlaced && (
-              <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: '36px' }}>
-                Orientation: <strong>{orientation}</strong> (press R to toggle)
-              </span>
-            )}
-          </div>
-        )}
-
         {isGameOver && (
-          <button onClick={actions.reset} style={{ ...buttonStylePrimary, marginTop: 10 }} className="btn-primary">
+          <button onClick={actions.reset} className="btn-primary" style={{ marginTop: 10, borderRadius: 6 }}>
             New Game
           </button>
         )}
@@ -198,10 +176,6 @@ function App() {
 
       {/* ===== PLAYER ZONE (LEFT) ===== */}
       <section className="zone-player" data-testid="zone-player">
-        <div className="zone-label">
-          <span>&#9875;</span> Your Side
-        </div>
-
         <div className="board-container">
           <BoardGrid
             board={state.game.humanBoard}
@@ -242,6 +216,28 @@ function App() {
           </div>
         )}
 
+        {/* Anchored CTAs: bottom of setup zone */}
+        {isSetup && (
+          <div className="setup-cta-zone">
+            {!allShipsPlaced && (
+              <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', fontSize: 13 }}>
+                Orientation: <strong>{orientation}</strong> (press R to toggle)
+              </span>
+            )}
+            <button
+              onClick={actions.autoPlaceHumanFleet}
+              className="btn-secondary"
+            >
+              Auto-Place Ships
+            </button>
+            {allShipsPlaced && (
+              <button onClick={actions.startPlaying} className="btn-primary btn-start-game" style={{ borderRadius: 6 }}>
+                Start Game
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Companion panel: player fleet damage during play */}
         {(isPlaying || isGameOver) && (
           <div className="companion-panel" data-testid="player-companion-panel">
@@ -261,10 +257,6 @@ function App() {
 
       {/* ===== ENEMY ZONE (RIGHT) ===== */}
       <section className="zone-enemy" data-testid="zone-enemy">
-        <div className="zone-label">
-          <span>&#127919;</span> Enemy Side
-        </div>
-
         <div className="board-container">
           <BoardGrid
             board={state.game.aiBoard}
@@ -309,25 +301,5 @@ function App() {
     </div>
   );
 }
-
-const buttonStyleSecondary: React.CSSProperties = {
-  padding: '8px 18px',
-  fontSize: 14,
-  fontFamily: 'var(--font-body)',
-  border: '1px solid var(--surface-edge)',
-  borderRadius: 6,
-  backgroundColor: 'var(--board-bg)',
-  color: 'var(--text-primary)',
-  cursor: 'pointer',
-};
-
-const buttonStylePrimary: React.CSSProperties = {
-  ...buttonStyleSecondary,
-  backgroundColor: 'var(--warm-cta)',
-  borderColor: 'var(--warm-cta)',
-  fontWeight: 600,
-  color: 'var(--text-primary)',
-  boxShadow: '0 0 15px rgba(255, 143, 0, 0.35)',
-};
 
 export default App;

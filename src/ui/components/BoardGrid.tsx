@@ -30,10 +30,10 @@ const CELL_COLORS: Record<CellState, string> = {
 
 const CELL_SHADOWS: Record<CellState, string> = {
   empty: 'none',
-  ship: 'none',
+  ship: 'inset 0 -2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.15), 0 0 6px rgba(38,166,154,0.3)',
   miss: 'none',
-  hit: '0 0 8px var(--state-hit)',
-  sunk: '0 0 8px var(--state-sunk)',
+  hit: '0 0 4px var(--state-hit), 0 0 10px rgba(255,109,0,0.3), 0 0 20px rgba(255,109,0,0.1)',
+  sunk: '0 0 4px var(--state-sunk), 0 0 10px rgba(194,24,91,0.3), 0 0 20px rgba(194,24,91,0.1)',
 };
 
 const CELL_SYMBOLS: Record<CellState, string> = {
