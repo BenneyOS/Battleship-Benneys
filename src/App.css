@@ -69,6 +69,25 @@
   /* ── Accent (kept for test compat) ────────────────────────────── */
   --accent-warm: #ff8f00;
   --accent-warm-hover: #ffa726;
+
+  /* ── Panel recipe (from .companion-panel / board-bezel) ──────── */
+  --panel-radius: 8px;
+  --panel-border-width: 1px;
+  --panel-border-color: rgba(0, 229, 255, 0.2);
+  --panel-fill: rgba(27, 79, 114, 0.5);
+  --panel-glow: 0 0 8px rgba(0, 229, 255, 0.08);
+
+  /* ── 8px spacing scale ──────────────────────────────────────── */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
+
+  /* ── Tone (reuse celebration/side-identity) ─────────────────── */
+  --tone-positive: var(--side-player);
+  --tone-cool: var(--side-enemy);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -380,12 +399,12 @@
    COMPANION PROGRESS PANELS — with bezel glow
    ═══════════════════════════════════════════════════════════════════════ */
 .companion-panel {
-  margin-top: 16px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background-color: rgba(27, 79, 114, 0.5);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.08);
+  margin-top: var(--space-sm);
+  padding: 12px var(--space-sm);
+  border-radius: var(--panel-radius);
+  background-color: var(--panel-fill);
+  border: var(--panel-border-width) solid var(--panel-border-color);
+  box-shadow: var(--panel-glow);
   width: 100%;
   max-width: 420px;
 }
@@ -397,7 +416,7 @@
   width: 100%;
   max-width: 600px;
   padding: 12px 20px;
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   text-align: center;
   transition: background-color 0.4s ease, border-color 0.4s ease;
   border: 2px solid transparent;
@@ -417,7 +436,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: var(--space-xs);
 }
 
 .turn-banner__icon {
@@ -438,7 +457,7 @@
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  margin-top: var(--space-xs);
 }
 
 /* Handoff pulse animation */
@@ -457,7 +476,7 @@
    ═══════════════════════════════════════════════════════════════════════ */
 .event-line {
   margin-top: 6px;
-  padding: 4px 16px;
+  padding: 4px var(--space-sm);
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--text-muted);
@@ -516,7 +535,7 @@
 .accuracy-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-xs);
   padding: 4px 14px;
   border-radius: 20px;
   background-color: rgba(46, 134, 193, 0.3);
@@ -573,8 +592,8 @@
 .mute-button {
   margin-top: 6px;
   padding: 4px 10px;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: var(--space-sm);
+  border: var(--panel-border-width) solid var(--panel-border-color);
   background-color: rgba(46, 134, 193, 0.2);
   color: var(--text-primary);
   font-size: 16px;
@@ -584,6 +603,224 @@
 
 .mute-button:hover {
   background-color: rgba(0, 229, 255, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HUD CONSOLE — contained horizontal gameplay dashboard
+   Uses panel recipe tokens; reads as sibling of setup companion panels.
+   ═══════════════════════════════════════════════════════════════════════ */
+.hud-console {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 680px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--panel-radius);
+  background-color: var(--panel-fill);
+  border: var(--panel-border-width) solid var(--panel-border-color);
+  box-shadow: var(--panel-glow);
+  box-sizing: border-box;
+  gap: 0;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Tone-shift: your turn = positive (cyan), computer turn = cool (red) */
+.hud-console[data-turn="player"] {
+  border-color: var(--tone-positive);
+  box-shadow: 0 0 8px rgba(41, 182, 246, 0.15);
+}
+
+.hud-console[data-turn="computer"] {
+  border-color: var(--tone-cool);
+  box-shadow: 0 0 8px rgba(239, 83, 80, 0.15);
+}
+
+/* Zones: flex children sharing the centerline */
+.hud-console__zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-xs);
+  min-height: 40px;
+}
+
+.hud-console__zone--turn {
+  flex: 2;
+  min-width: 0;
+}
+
+.hud-console__zone--accuracy {
+  flex: 1;
+}
+
+.hud-console__zone--turns {
+  flex: 0 0 auto;
+  padding: 0 var(--space-sm);
+}
+
+.hud-console__zone--action {
+  flex: 1.5;
+  min-width: 0;
+}
+
+.hud-console__zone--mute {
+  flex: 0 0 auto;
+  padding: 0 4px;
+}
+
+/* Vertical dividers between zones */
+.hud-console__divider {
+  width: var(--panel-border-width);
+  align-self: stretch;
+  background-color: var(--panel-border-color);
+  flex-shrink: 0;
+}
+
+/* Turn count stat display */
+.hud-console__stat-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.hud-console__stat-label {
+  font-family: var(--font-display);
+  font-size: 7px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* Inside HUD console: flatten the turn banner — dense, no box */
+.hud-console .turn-banner {
+  padding: 0;
+  border: none;
+  background: none;
+  max-width: none;
+  border-radius: 0;
+}
+
+.hud-console .turn-banner--player,
+.hud-console .turn-banner--computer {
+  background: none;
+  border-color: transparent;
+}
+
+.hud-console .turn-banner__title {
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.hud-console .turn-banner__icon {
+  font-size: 16px;
+}
+
+/* Hide "Fire at the enemy grid" prompt inside HUD — DOM preserved for tests */
+.hud-console .turn-banner__prompt {
+  display: none;
+}
+
+/* Inside HUD: flatten accuracy chip */
+.hud-console .accuracy-chip {
+  padding: 0;
+  border: none;
+  background: none;
+  gap: 4px;
+  font-size: 12px;
+}
+
+/* Inside HUD: flatten event line */
+.hud-console .event-line {
+  margin-top: 0;
+  padding: 0;
+  max-width: none;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Inside HUD: flatten mute button */
+.hud-console .mute-button {
+  margin-top: 0;
+  border: none;
+  background: none;
+  padding: 4px;
+  font-size: 14px;
+}
+
+/* ── HUD Console tone-shift on child text ───────────────────────── */
+.hud-console[data-turn="player"] .turn-banner__title {
+  color: var(--tone-positive);
+}
+
+.hud-console[data-turn="computer"] .turn-banner__title {
+  color: var(--tone-cool);
+}
+
+.hud-console[data-turn="computer"] .hud-console__stat-value {
+  color: var(--tone-cool);
+}
+
+.hud-console[data-turn="computer"] .hud-console__divider {
+  background-color: rgba(239, 83, 80, 0.2);
+}
+
+/* ── HUD Console mobile: compact two-row layout ────────────────── */
+@media (max-width: 899px) {
+  .hud-console {
+    flex-wrap: wrap;
+    max-width: 420px;
+    padding: var(--space-xs);
+    gap: var(--space-xs);
+  }
+
+  /* First row: turn + accuracy + turns */
+  .hud-console__zone--turn {
+    flex: 1 1 40%;
+  }
+
+  .hud-console__zone--accuracy {
+    flex: 0 1 auto;
+  }
+
+  .hud-console__zone--turns {
+    flex: 0 0 auto;
+    padding: 0 var(--space-xs);
+  }
+
+  /* Second row: action + mute */
+  .hud-console__zone--action {
+    flex: 1 1 70%;
+    order: 5;
+  }
+
+  .hud-console__zone--mute {
+    flex: 0 0 auto;
+    order: 6;
+  }
+
+  /* Hide dividers on mobile — use gap instead */
+  .hud-console__divider {
+    display: none;
+  }
+
+  .hud-console .turn-banner__title {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .hud-console .turn-banner__icon {
+    font-size: 14px;
+  }
+
+  .hud-console .event-line {
+    font-size: 10px;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -711,7 +948,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 48px 16px;
+  padding: var(--space-xl) var(--space-sm);
   position: relative;
   z-index: 50;
   min-height: 100vh;
@@ -773,7 +1010,7 @@
   font-family: var(--font-display);
   font-size: 10px;
   letter-spacing: 2px;
-  margin: 0 0 16px; /* sm */
+  margin: 0 0 var(--space-sm);
   text-transform: uppercase;
 }
 
@@ -801,7 +1038,7 @@
   width: 24px;
   height: 44px;
   text-align: right;
-  padding-right: 16px; /* sm = gutter-to-grid gap */
+  padding-right: var(--space-sm);
   color: var(--text-secondary);
   font-family: var(--font-display);
   font-size: 7px;
@@ -819,7 +1056,7 @@
 .endgame-screen__cell {
   width: 44px;
   height: 44px;
-  border: 1px solid rgba(0, 229, 255, 0.15);
+  border: var(--panel-border-width) solid rgba(0, 229, 255, 0.15);
   transition: background-color 0.2s;
 }
 
@@ -835,7 +1072,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0;
-  margin-top: 48px; /* xl: board → trophy */
+  margin-top: var(--space-xl);
   animation: hierarchy-cascade 0.5s ease-out;
   width: 100%;
 }
@@ -848,7 +1085,7 @@
 .endgame-screen__trophy {
   font-size: 48px;
   line-height: 1;
-  margin-bottom: 24px; /* md: trophy → VICTORY */
+  margin-bottom: var(--space-md);
 }
 
 .endgame-screen__trophy--victory {
@@ -863,7 +1100,7 @@
 .endgame-screen__title {
   font-family: var(--font-display);
   letter-spacing: 6px;
-  margin: 0 0 16px; /* sm: VICTORY → subtitle */
+  margin: 0 0 var(--space-sm);
 }
 
 .endgame-screen__title--victory {
@@ -887,13 +1124,13 @@
   font-size: 11px;
   letter-spacing: 2px;
   color: var(--text-secondary);
-  margin: 0 0 32px; /* lg: subtitle → medal row */
+  margin: 0 0 var(--space-lg);
 }
 
 /* Medals — equal & mirrored, fixed width */
 .endgame-screen__medals {
   display: flex;
-  gap: 16px; /* sm */
+  gap: var(--space-sm);
   margin-top: 0;
   justify-content: center;
   width: 100%;
@@ -903,10 +1140,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px; /* md all sides */
-  border-radius: 8px;
-  background: rgba(27, 79, 114, 0.5);
-  border: 1px solid rgba(0, 229, 255, 0.2);
+  padding: var(--space-md);
+  border-radius: var(--panel-radius);
+  background: var(--panel-fill);
+  border: var(--panel-border-width) solid var(--panel-border-color);
   flex: 1;
   max-width: 200px;
   min-width: 140px;
@@ -925,7 +1162,7 @@
 
 .endgame-screen__medal-icon {
   font-size: 24px;
-  margin-bottom: 8px; /* xs: icon → value */
+  margin-bottom: var(--space-xs);
 }
 
 .endgame-screen__medal-value {
@@ -941,12 +1178,12 @@
   font-size: 7px;
   color: var(--text-muted);
   letter-spacing: 2px;
-  margin-top: 8px; /* xs: value → label */
+  margin-top: var(--space-xs);
 }
 
 /* Action lock: NEW GAME CTA — width matches medal row */
 .endgame-screen__action {
-  margin-top: 32px; /* lg: medal row → button */
+  margin-top: var(--space-lg);
   animation: action-arrive 0.5s ease-out;
   width: 100%;
   display: flex;
@@ -962,12 +1199,11 @@
   font-family: var(--font-display);
   font-size: 14px;
   letter-spacing: 3px;
-  padding: 16px 32px; /* sm vertical, lg horizontal */
+  padding: var(--space-sm) var(--space-lg);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--panel-radius);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  /* Width = medal row width (clamped by the same container) */
   width: 100%;
   max-width: 416px; /* 2 × 200px medals + 16px gap */
   box-sizing: border-box;
@@ -1017,7 +1253,7 @@
   font-family: var(--font-display) !important;
   font-size: 12px !important;
   letter-spacing: 2px;
-  padding: 14px 32px !important;
+  padding: 14px var(--space-lg) !important;
   box-shadow:
     0 0 6px rgba(255, 143, 0, 0.5),
     0 0 16px rgba(255, 143, 0, 0.3),
@@ -1040,7 +1276,7 @@
 
 /* Disabled state — muted, no glow, not interactive */
 .btn-primary:disabled {
-  background: rgba(27, 79, 114, 0.5) !important;
+  background: var(--panel-fill) !important;
   border-color: var(--surface-edge) !important;
   color: var(--text-muted) !important;
   box-shadow: none !important;
@@ -1054,9 +1290,9 @@
   padding: 10px 20px;
   font-size: 13px;
   font-family: var(--font-body);
-  border: 1px solid var(--surface-edge);
+  border: var(--panel-border-width) solid var(--surface-edge);
   border-radius: 6px;
-  background-color: rgba(27, 79, 114, 0.5);
+  background-color: var(--panel-fill);
   color: var(--text-secondary);
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -1076,10 +1312,10 @@
 
 .setup-controls__roster {
   display: flex;
-  gap: 8px; /* xs */
+  gap: var(--space-xs);
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 8px; /* xs */
+  margin-top: var(--space-xs);
 }
 
 .setup-controls__ship-chip {
@@ -1105,10 +1341,10 @@
 /* Placement tools: rotate + auto-place (clustered, shared row) */
 .setup-controls__tools {
   display: flex;
-  gap: 8px; /* xs */
+  gap: var(--space-xs);
   align-items: center;
   justify-content: center;
-  margin-top: 16px; /* sm: status → tools */
+  margin-top: var(--space-sm);
   width: 100%;
 }
 
@@ -1116,13 +1352,13 @@
 .btn-rotate {
   display: flex;
   align-items: center;
-  gap: 8px; /* xs */
-  padding: 10px 16px;
-  min-height: 44px; /* touch target */
+  gap: var(--space-xs);
+  padding: 10px var(--space-sm);
+  min-height: 44px;
   min-width: 44px;
-  border: 1px solid var(--surface-edge);
+  border: var(--panel-border-width) solid var(--surface-edge);
   border-radius: 6px;
-  background-color: rgba(27, 79, 114, 0.5);
+  background-color: var(--panel-fill);
   color: var(--text-primary);
   font-family: var(--font-body);
   font-size: 14px;
@@ -1157,12 +1393,12 @@
 .btn-rotate__hint {
   font-family: var(--font-display);
   font-size: 9px;
-  color: var(--text-muted);
-  border: 1px solid var(--text-muted);
+  color: var(--side-player);
+  border: var(--panel-border-width) solid var(--side-player);
   border-radius: 3px;
   padding: 1px 4px;
   line-height: 1;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 /* Auto-Place in tool row */
@@ -1176,7 +1412,7 @@
 
 /* Terminal action: Start Battle, separated with whitespace */
 .setup-controls__action {
-  margin-top: 32px; /* lg: tools → Start Battle (separation signals "finish") */
+  margin-top: var(--space-lg);
   width: 100%;
 }
 
@@ -1248,6 +1484,11 @@
   .battle-reveal-callout {
     animation: none !important;
   }
+
+  /* HUD console: instant tone-shift, no transition */
+  .hud-console {
+    transition: none !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1270,7 +1511,7 @@
   .zone-player {
     border-right: none;
     border-left: 3px solid var(--side-player);
-    padding: 8px; /* tighter on mobile to fit setup above fold */
+    padding: var(--space-xs);
   }
 
   .zone-enemy {
@@ -1300,15 +1541,15 @@
 
   /* Mobile setup controls: tighter spacing, full width */
   .companion-panel {
-    margin-top: 8px; /* xs on mobile: tighter status→board gap */
+    margin-top: var(--space-xs);
   }
 
   .setup-controls__tools {
-    margin-top: 8px; /* xs on mobile */
+    margin-top: var(--space-xs);
   }
 
   .setup-controls__action {
-    margin-top: 16px; /* sm on mobile: fit above fold */
+    margin-top: var(--space-sm);
   }
 
   .btn-rotate {
@@ -1328,10 +1569,10 @@
   .endgame-screen__title--victory { font-size: 20px; letter-spacing: 4px; }
   .endgame-screen__title--defeat { font-size: 18px; letter-spacing: 3px; }
   .endgame-screen__trophy { font-size: 36px; }
-  .endgame-screen__medals { flex-direction: column; gap: 16px; align-items: center; }
+  .endgame-screen__medals { flex-direction: column; gap: var(--space-sm); align-items: center; }
   .endgame-screen__medal { max-width: 280px; width: 100%; }
   .endgame-screen__cell { width: 32px; height: 32px; }
-  .endgame-screen__coord { width: 20px; font-size: 6px; padding-right: 8px; }
+  .endgame-screen__coord { width: 20px; font-size: 6px; padding-right: var(--space-xs); }
   .endgame-screen__coord--col { width: 32px; height: 20px; }
   .endgame-screen__cta { max-width: 280px; }
 }
