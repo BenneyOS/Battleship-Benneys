@@ -6,21 +6,18 @@ interface BattleScoreboardProps {
 }
 
 export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboardProps) {
-  const { sunk, remaining, total, percent } = progress;
+  const { sunk, total, percent } = progress;
 
   return (
-    <div style={{ marginBottom: 12, textAlign: 'center' }}>
+    <div style={{ marginBottom: 12, textAlign: 'center', fontFamily: 'var(--font-body)' }}>
       <div style={{ fontSize: 14, marginBottom: 6 }}>
         You've sunk <strong>{sunk} of {total}</strong> ships
-        {remaining > 0 && (
-          <span style={{ color: 'var(--text-secondary)' }}> — {remaining} more to go</span>
-        )}
       </div>
       <div
         style={{
           width: 240,
           height: 8,
-          backgroundColor: 'var(--surface-edge)',
+          backgroundColor: 'rgba(0, 229, 255, 0.15)',
           borderRadius: 4,
           overflow: 'hidden',
           margin: '0 auto',
@@ -33,6 +30,7 @@ export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboar
             backgroundColor: percent === 100 ? 'var(--success)' : 'var(--celebrate-hit)',
             borderRadius: 4,
             transition: 'width 0.3s ease',
+            boxShadow: '0 0 8px rgba(255, 109, 0, 0.4)',
           }}
           role="progressbar"
           aria-valuenow={percent}
@@ -41,15 +39,13 @@ export function BattleScoreboard({ progress, milestoneMessage }: BattleScoreboar
           aria-label={`${percent}% of enemy fleet destroyed`}
         />
       </div>
-      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-        {percent}% of the enemy fleet destroyed
-      </div>
+
       {milestoneMessage && (
         <div
           style={{
             marginTop: 8,
             padding: '6px 14px',
-            backgroundColor: 'rgba(39, 174, 96, 0.12)',
+            backgroundColor: 'rgba(102, 187, 106, 0.12)',
             border: '1px solid var(--success)',
             borderRadius: 6,
             fontSize: 13,

@@ -21,11 +21,19 @@ interface BoardGridProps {
 }
 
 const CELL_COLORS: Record<CellState, string> = {
-  empty: 'var(--surface-2, #1e3a56)',
-  ship: '#4a7c59',
-  miss: 'var(--state-miss, #3a4a5a)',
-  hit: 'var(--state-hit, #d4920b)',
-  sunk: 'var(--state-sunk, #8b0000)',
+  empty: 'var(--cell-bg)',
+  ship: 'var(--state-ship)',
+  miss: 'var(--state-miss)',
+  hit: 'var(--state-hit)',
+  sunk: 'var(--state-sunk)',
+};
+
+const CELL_SHADOWS: Record<CellState, string> = {
+  empty: 'none',
+  ship: 'none',
+  miss: 'none',
+  hit: '0 0 8px var(--state-hit)',
+  sunk: '0 0 8px var(--state-sunk)',
 };
 
 const CELL_SYMBOLS: Record<CellState, string> = {
@@ -57,9 +65,17 @@ export function BoardGrid({
   }
 
   return (
-    <div style={{ display: 'inline-block', margin: '0 16px' }} onMouseLeave={onBoardLeave}>
-      <h3 style={{ textAlign: 'center', color: 'var(--text-primary, #ecf0f1)', margin: '0 0 8px' }}>{label}</h3>
-      <table style={{ borderCollapse: 'collapse' }}>
+    <div className="board-bezel" onMouseLeave={onBoardLeave}>
+      <h3 style={{
+        textAlign: 'center',
+        color: 'var(--neon-cyan)',
+        fontFamily: 'var(--font-display)',
+        fontSize: 10,
+        letterSpacing: 2,
+        margin: '0 0 8px',
+        textShadow: '0 0 8px rgba(0, 229, 255, 0.4)',
+      }}>{label}</h3>
+      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
           <tr>
             <th style={{ width: 30, height: 30 }} />
@@ -70,9 +86,9 @@ export function BoardGrid({
                   width: 36,
                   height: 24,
                   textAlign: 'center',
-                  color: 'var(--text-secondary, #95a5a6)',
-                  fontSize: 12,
-                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 8,
                 }}
               >
                 {COLUMN_LABELS[i]}
@@ -86,9 +102,9 @@ export function BoardGrid({
               <td
                 style={{
                   textAlign: 'center',
-                  color: 'var(--text-secondary, #95a5a6)',
-                  fontSize: 12,
-                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 8,
                   width: 30,
                 }}
               >
@@ -101,11 +117,11 @@ export function BoardGrid({
                 const isHighlighted = highlightedCell?.x === x && highlightedCell?.y === y;
                 const previewBg = preview
                   ? preview.isValid
-                    ? 'rgba(46, 204, 113, 0.5)'
-                    : 'rgba(231, 76, 60, 0.5)'
+                    ? 'rgba(102, 187, 106, 0.5)'
+                    : 'rgba(239, 83, 80, 0.5)'
                   : undefined;
                 const bg = isHighlighted
-                  ? '#f39c12'
+                  ? 'var(--gold)'
                   : isPreview && previewBg
                     ? previewBg
                     : CELL_COLORS[cellState];
@@ -125,12 +141,13 @@ export function BoardGrid({
                       height: 36,
                       textAlign: 'center',
                       backgroundColor: bg,
-                      border: '1px solid var(--surface-edge, #2a5070)',
+                      border: '1px solid rgba(0, 229, 255, 0.2)',
+                      boxShadow: CELL_SHADOWS[cellState],
                       cursor: isClickable ? 'pointer' : 'default',
-                      color: cellState === 'miss' ? 'var(--text-muted, #7f8c8d)' : 'var(--text-primary, #ecf0f1)',
+                      color: cellState === 'miss' ? 'var(--text-muted)' : 'var(--text-primary)',
                       fontSize: 16,
                       fontWeight: 'bold',
-                      transition: 'background-color 0.15s',
+                      transition: 'background-color 0.15s, box-shadow 0.15s',
                     }}
                   >
                     {CELL_SYMBOLS[cellState]}

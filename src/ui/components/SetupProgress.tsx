@@ -8,7 +8,7 @@ export function SetupProgress({ progress }: SetupProgressProps) {
   const { placed, total, nextShip, percent } = progress;
 
   return (
-    <div style={{ marginBottom: 12, textAlign: 'center' }}>
+    <div style={{ marginBottom: 12, textAlign: 'center', fontFamily: 'var(--font-body)' }}>
       <div style={{ fontSize: 14, marginBottom: 6 }}>
         <strong>{placed} of {total}</strong> ships placed
         {nextShip && (
@@ -21,7 +21,7 @@ export function SetupProgress({ progress }: SetupProgressProps) {
         style={{
           width: 240,
           height: 8,
-          backgroundColor: 'var(--surface-edge)',
+          backgroundColor: 'rgba(0, 229, 255, 0.15)',
           borderRadius: 4,
           overflow: 'hidden',
           margin: '0 auto',

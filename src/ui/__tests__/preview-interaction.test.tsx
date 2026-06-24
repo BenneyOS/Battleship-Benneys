@@ -30,7 +30,7 @@ describe('Placement preview interaction (§6.2)', () => {
     let validPreviewCount = 0;
     playerZone.querySelectorAll('td[data-coord]').forEach((cell) => {
       const bg = (cell as HTMLElement).style.backgroundColor;
-      if (bg.includes('46, 204, 113')) validPreviewCount++;
+      if (bg.includes('102, 187, 106')) validPreviewCount++;
     });
     // First ship is length 5 horizontal, so 5 cells should be green
     expect(validPreviewCount).toBe(5);
@@ -49,7 +49,7 @@ describe('Placement preview interaction (§6.2)', () => {
     let invalidPreviewCount = 0;
     playerZone.querySelectorAll('td[data-coord]').forEach((cell) => {
       const bg = (cell as HTMLElement).style.backgroundColor;
-      if (bg.includes('231, 76, 60')) invalidPreviewCount++;
+      if (bg.includes('239, 83, 80')) invalidPreviewCount++;
     });
     expect(invalidPreviewCount).toBeGreaterThan(0);
   });
@@ -95,7 +95,7 @@ describe('Placement preview interaction (§6.2)', () => {
     let validPreviewCount = 0;
     playerZone.querySelectorAll('td[data-coord]').forEach((cell) => {
       const bg = (cell as HTMLElement).style.backgroundColor;
-      if (bg.includes('46, 204, 113')) validPreviewCount++;
+      if (bg.includes('102, 187, 106')) validPreviewCount++;
     });
     expect(validPreviewCount).toBe(4);
   });
@@ -112,19 +112,19 @@ describe('Placement preview interaction (§6.2)', () => {
     let previewCount = 0;
     playerZone.querySelectorAll('td[data-coord]').forEach((cell) => {
       const bg = (cell as HTMLElement).style.backgroundColor;
-      if (bg.includes('46, 204, 113') || bg.includes('231, 76, 60')) previewCount++;
+      if (bg.includes('102, 187, 106') || bg.includes('239, 83, 80')) previewCount++;
     });
     expect(previewCount).toBeGreaterThan(0);
 
     // Leave the board
-    const boardWrapper = playerZone.querySelector('[style*="inline-block"]');
+    const boardWrapper = playerZone.querySelector('.board-bezel');
     fireEvent.mouseLeave(boardWrapper!);
 
     // Preview should be cleared
     let clearedCount = 0;
     playerZone.querySelectorAll('td[data-coord]').forEach((cell) => {
       const bg = (cell as HTMLElement).style.backgroundColor;
-      if (bg.includes('46, 204, 113') || bg.includes('231, 76, 60')) clearedCount++;
+      if (bg.includes('102, 187, 106') || bg.includes('239, 83, 80')) clearedCount++;
     });
     expect(clearedCount).toBe(0);
   });
