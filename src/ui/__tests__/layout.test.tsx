@@ -21,14 +21,12 @@ describe('§5.1 Structure / placement tests', () => {
     render(<App />);
     const playerZone = screen.getByTestId('zone-player');
     expect(playerZone.textContent).toContain('Your Fleet');
-    expect(playerZone.textContent).toContain('Your Side');
   });
 
   it('enemy board renders inside the enemy zone', () => {
     render(<App />);
     const enemyZone = screen.getByTestId('zone-enemy');
     expect(enemyZone.textContent).toContain('Enemy Waters');
-    expect(enemyZone.textContent).toContain('Enemy Side');
   });
 
   it('no aria-live announcement appears outside the header zone', () => {
@@ -143,9 +141,8 @@ describe('§5.3 Behavior-preservation tests', () => {
     render(<App />);
     const playerZone = screen.getByTestId('zone-player');
     const enemyZone = screen.getByTestId('zone-enemy');
-    // Player zone has text "Your Side" paired with icon
-    expect(playerZone.textContent).toContain('Your Side');
-    // Enemy zone has text "Enemy Side" paired with icon
-    expect(enemyZone.textContent).toContain('Enemy Side');
+    // Board titles provide side identity (eyebrow labels removed per subtraction pass)
+    expect(playerZone.textContent).toContain('Your Fleet');
+    expect(enemyZone.textContent).toContain('Enemy Waters');
   });
 });

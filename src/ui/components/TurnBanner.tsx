@@ -10,7 +10,7 @@ export function TurnBanner({ status, gamePhase }: TurnBannerProps) {
   const color = isPlayer ? 'var(--side-player, #3498db)' : 'var(--side-enemy, #e74c3c)';
 
   const icon = gamePhase === 'setup'
-    ? '\u2693'
+    ? null
     : gamePhase === 'gameOver'
       ? (status.turnTitle === 'VICTORY' ? '\u{1F3C6}' : '\u{1F480}')
       : isPlayer ? '\u271A' : '\u{1F4E1}';
