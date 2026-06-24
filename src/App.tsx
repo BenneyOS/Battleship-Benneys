@@ -238,12 +238,13 @@ function App() {
         <div className="atmosphere-shimmer" aria-hidden="true" />
 
         <VictoryScreen
-          board={state.game.aiBoard}
+          board={isVictory ? state.game.aiBoard : state.game.humanBoard}
           fleetProgress={battleProg}
           accuracy={accuracy}
           lastSunkShipName={lastSunkShip}
           isVictory={isVictory}
           onNewGame={handleReset}
+          enemySunkCount={battleProg.sunk}
         />
 
         {/* Mute control */}
