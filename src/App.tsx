@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGameState, SHIP_NAMES } from './app/useGameState';
 import { BoardGrid } from './ui/components/BoardGrid';
 import { TurnBanner } from './ui/components/TurnBanner';
@@ -25,6 +25,9 @@ const FLEET_DEF: FleetDef[] = FLEET.map((length, i) => ({
   name: SHIP_NAMES[i],
   length,
 }));
+
+/** Named tunable constant — controls the entire opponent reveal transition. */
+const BATTLE_REVEAL_MS = 600;
 
 function App() {
   const {
@@ -59,6 +62,10 @@ function App() {
 
   // Fleet-ready beat tracking
   const [fleetReadyFired, setFleetReadyFired] = useState(false);
+
+  // Opponent reveal transition: true while the enemy board is animating in
+  const [battleRevealing, setBattleRevealing] = useState(false);
+  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Celebration event — shared across all tiers
   const [celebrationEvent, setCelebrationEvent] = useState<CelebrationEvent | null>(null);
@@ -145,7 +152,7 @@ function App() {
       ? previewPlacement(state.game.humanBoard, previewAnchor, currentShipLength, orientation)
       : null;
 
-  // Unlock audio on any click within the game layout (covers Start Game, fire, etc.)
+  // Unlock audio on any click within the game layout (covers Start Battle, fire, etc.)
   const handleLayoutClick = useCallback(() => { unlockAudio(); }, []);
 
   // Enemy grid is interactive only when it's human's turn and AI is idle
@@ -192,6 +199,16 @@ function App() {
     // Invalid click is a no-op
   }, [currentShipLength, orientation, state.game.humanBoard, actions, touchAnchor]);
 
+  // Start Battle: trigger reveal transition then start playing
+  const handleStartBattle = useCallback(() => {
+    unlockAudio();
+    setBattleRevealing(true);
+    actions.startPlaying();
+    revealTimerRef.current = setTimeout(() => {
+      setBattleRevealing(false);
+    }, BATTLE_REVEAL_MS);
+  }, [actions]);
+
   const handleReset = useCallback(() => {
     actions.reset();
     setFleetReadyFired(false);
@@ -200,7 +217,16 @@ function App() {
     setPrevShot(null);
     setPrevMilestoneMsg(null);
     setPrevIsDefeat(false);
+    setBattleRevealing(false);
+    if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
   }, [actions]);
+
+  // Cleanup reveal timer on unmount
+  useEffect(() => {
+    return () => {
+      if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
+    };
+  }, []);
 
   // --- Victory/Defeat screen ---
   if (isGameOver) {
@@ -319,11 +345,14 @@ function App() {
             >
               Auto-Place Ships
             </button>
-            {allShipsPlaced && (
-              <button onClick={actions.startPlaying} className="btn-primary btn-start-game" style={{ borderRadius: 6 }}>
-                Start Game
-              </button>
-            )}
+            <button
+              onClick={handleStartBattle}
+              disabled={!allShipsPlaced}
+              className="btn-primary btn-start-game"
+              style={{ borderRadius: 6 }}
+            >
+              Start Battle
+            </button>
           </div>
         )}
 
@@ -344,26 +373,38 @@ function App() {
         )}
       </section>
 
-      {/* ===== ENEMY ZONE (RIGHT) ===== */}
-      <section className="zone-enemy" data-testid="zone-enemy">
-        <div className="board-container">
-          <BoardGrid
-            board={state.game.aiBoard}
-            showShips={false}
-            onClick={enemyGridInteractive ? actions.fire : undefined}
-            label="Enemy Waters"
-            interactive={enemyGridInteractive}
-          />
-        </div>
-
-        {/* Companion panel: enemy fleet damage + checklist */}
-        {isPlaying && (
-          <div className="companion-panel" data-testid="enemy-companion-panel">
-            <BattleScoreboard progress={battleProg} milestoneMessage={milestoneMessage} />
-            <EnemyFleetChecklist ships={enemyShipStatus} />
+      {/* ===== ENEMY ZONE (RIGHT) — absent during setup ===== */}
+      {(isPlaying || isGameOver) && (
+        <section
+          className={`zone-enemy${battleRevealing ? ' zone-enemy--revealing' : ''}`}
+          data-testid="zone-enemy"
+        >
+          <div className="board-container">
+            <BoardGrid
+              board={state.game.aiBoard}
+              showShips={false}
+              onClick={enemyGridInteractive ? actions.fire : undefined}
+              label="Enemy Waters"
+              interactive={enemyGridInteractive}
+            />
           </div>
-        )}
-      </section>
+
+          {/* Companion panel: enemy fleet damage + checklist */}
+          {isPlaying && (
+            <div className="companion-panel" data-testid="enemy-companion-panel">
+              <BattleScoreboard progress={battleProg} milestoneMessage={milestoneMessage} />
+              <EnemyFleetChecklist ships={enemyShipStatus} />
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* "ENEMY FLEET DETECTED" callout during reveal */}
+      {battleRevealing && (
+        <div className="battle-reveal-callout" aria-live="polite">
+          Enemy Fleet Detected
+        </div>
+      )}
 
       {/* Legend — below the grid zones */}
       {isPlaying && (

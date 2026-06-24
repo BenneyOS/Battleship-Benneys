@@ -9,6 +9,7 @@
 
 :root {
   --layout-breakpoint: 900px;
+  --battle-reveal-ms: 600ms;
 
   /* ── Typography tokens ────────────────────────────────────────── */
   --font-display: 'Press Start 2P', monospace;
@@ -95,46 +96,72 @@
   overflow: hidden;
 }
 
-/* ── Phase-aware layout: setup = player dominant ──────────────── */
+/* ── Phase-aware layout: setup = single centered board ─────────── */
 .game-layout[data-phase="setup"] {
-  grid-template-columns: 3fr 1fr;
+  grid-template-areas:
+    'header'
+    'player';
+  grid-template-columns: 1fr;
 }
 
-.game-layout[data-phase="setup"] .zone-enemy {
-  opacity: 0.35;
-  filter: saturate(0.3);
-  pointer-events: none;
+.game-layout[data-phase="setup"] .zone-player {
+  border-right: none;
 }
 
-.game-layout[data-phase="setup"] .zone-enemy .board-bezel {
-  position: relative;
-}
-
-.game-layout[data-phase="setup"] .zone-enemy .board-bezel::after {
-  content: 'Locked until battle';
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 8px;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  background: rgba(15, 52, 96, 0.5);
-  border-radius: 6px;
-  z-index: 2;
-}
-
-/* ── Phase-aware reflow transition ────────────────────────────── */
+/* ── Opponent reveal transition ───────────────────────────────── */
 .game-layout {
-  transition: grid-template-columns 0.6s ease;
+  transition: grid-template-columns var(--battle-reveal-ms, 600ms) ease;
 }
 
-.zone-player,
+.zone-player {
+  transition: opacity 0.3s ease;
+}
+
 .zone-enemy {
-  transition: opacity 0.6s ease, filter 0.6s ease;
+  transition: opacity var(--battle-reveal-ms, 600ms) ease,
+              transform var(--battle-reveal-ms, 600ms) ease;
+}
+
+/* Enemy board entrance animation */
+.zone-enemy--revealing {
+  animation: enemy-slide-in var(--battle-reveal-ms, 600ms) ease both;
+}
+
+@keyframes enemy-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* "ENEMY FLEET DETECTED" callout during reveal */
+.battle-reveal-callout {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 8px rgba(0, 229, 255, 0.6),
+    0 0 24px rgba(0, 229, 255, 0.3);
+  text-transform: uppercase;
+  z-index: 100;
+  pointer-events: none;
+  animation: callout-flash var(--battle-reveal-ms, 600ms) ease both;
+}
+
+@keyframes callout-flash {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  30% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* ── Atmosphere: vignette ─────────────────────────────────────────── */
@@ -1030,17 +1057,28 @@
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* Play glyph on Start Game via CSS ::before (keeps text content clean for tests) */
+/* Play glyph on Start Battle via CSS ::before (keeps text content clean for tests) */
 .btn-start-game::before {
   content: '\25b6\00a0';
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   box-shadow:
     0 0 8px rgba(255, 143, 0, 0.6),
     0 0 24px rgba(255, 143, 0, 0.4),
     0 0 48px rgba(255, 143, 0, 0.2) !important;
   transform: scale(1.03);
+}
+
+/* Disabled state — muted, no glow, not interactive */
+.btn-primary:disabled {
+  background: rgba(27, 79, 114, 0.5) !important;
+  border-color: var(--surface-edge) !important;
+  color: var(--text-muted) !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
 }
 
 /* ── Secondary button (subordinate, e.g. Auto-Place) ─────────── */
@@ -1129,8 +1167,13 @@
     transition: none !important;
   }
 
-  .game-layout[data-phase="setup"] .zone-enemy {
-    transition: none !important;
+  /* Opponent reveal: appears in place, no slide/ease */
+  .zone-enemy--revealing {
+    animation: none !important;
+  }
+
+  .battle-reveal-callout {
+    animation: none !important;
   }
 }
 
@@ -1146,7 +1189,7 @@
     grid-template-columns: 1fr;
   }
 
-  /* Setup phase: single column, no grid ratio override */
+  /* Setup phase already single-column via phase rule; ensure no override */
   .game-layout[data-phase="setup"] {
     grid-template-columns: 1fr;
   }

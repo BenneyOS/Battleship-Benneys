@@ -78,7 +78,7 @@ describe('§5.4 Accessibility tests', () => {
     it('mute button is present during playing phase', () => {
       render(<App />);
       fireEvent.click(screen.getByText('Auto-Place Ships'));
-      fireEvent.click(screen.getByText('Start Game'));
+      fireEvent.click(screen.getByText('Start Battle'));
       expect(screen.getByTestId('mute-button')).toBeInTheDocument();
     });
   });

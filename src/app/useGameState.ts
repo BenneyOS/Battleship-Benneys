@@ -57,7 +57,7 @@ export function useGameState() {
         const nextIdx = placementIndex + 1;
         setPlacementIndex(nextIdx);
         if (nextIdx >= FLEET.length) {
-          setMessage('All ships placed! Click "Start Game" to begin.');
+          setMessage('All ships placed! Click "Start Battle" to begin.');
         } else {
           setMessage(`Place your ${FLEET[nextIdx]}-cell ship. Press R to rotate.`);
         }
@@ -299,7 +299,7 @@ export function useGameState() {
       }
       setState(buildState);
       setPlacementIndex(FLEET.length);
-      setMessage('Ships auto-placed! Click "Start Game" to begin.');
+      setMessage('Ships auto-placed! Click "Start Battle" to begin.');
     } catch {
       setMessage('Auto-placement failed, try again.');
     }

@@ -9,9 +9,23 @@ afterEach(() => {
   cleanup();
 });
 
+/** Helper: auto-place ships and click Start Battle to reach playing phase */
+function startGame() {
+  render(<App />);
+  fireEvent.click(screen.getByText('Auto-Place Ships'));
+  fireEvent.click(screen.getByText('Start Battle'));
+}
+
 describe('§5.1 Structure / placement tests', () => {
-  it('three zones exist: header, player, enemy', () => {
+  it('setup phase renders header and player zones only (enemy absent)', () => {
     render(<App />);
+    expect(screen.getByTestId('zone-header')).toBeTruthy();
+    expect(screen.getByTestId('zone-player')).toBeTruthy();
+    expect(screen.queryByTestId('zone-enemy')).toBeNull();
+  });
+
+  it('playing phase renders all three zones: header, player, enemy', () => {
+    startGame();
     expect(screen.getByTestId('zone-header')).toBeTruthy();
     expect(screen.getByTestId('zone-player')).toBeTruthy();
     expect(screen.getByTestId('zone-enemy')).toBeTruthy();
@@ -23,14 +37,14 @@ describe('§5.1 Structure / placement tests', () => {
     expect(playerZone.textContent).toContain('Your Fleet');
   });
 
-  it('enemy board renders inside the enemy zone', () => {
-    render(<App />);
+  it('enemy board renders inside the enemy zone during play', () => {
+    startGame();
     const enemyZone = screen.getByTestId('zone-enemy');
     expect(enemyZone.textContent).toContain('Enemy Waters');
   });
 
   it('no aria-live announcement appears outside the header zone', () => {
-    render(<App />);
+    startGame();
     const playerZone = screen.getByTestId('zone-player');
     const enemyZone = screen.getByTestId('zone-enemy');
     expect(playerZone.querySelectorAll('[aria-live]').length).toBe(0);
@@ -43,11 +57,10 @@ describe('§5.1 Structure / placement tests', () => {
     expect(playerZone.textContent).toContain('ships placed');
   });
 
-  it('no status element is duplicated across zones', () => {
-    render(<App />);
+  it('no status element is duplicated across zones during play', () => {
+    startGame();
     const playerZone = screen.getByTestId('zone-player');
     const enemyZone = screen.getByTestId('zone-enemy');
-    // No role="status" elements should appear in player or enemy zones
     expect(playerZone.querySelectorAll('[role="status"]').length).toBe(0);
     expect(enemyZone.querySelectorAll('[role="status"]').length).toBe(0);
   });
@@ -60,21 +73,38 @@ describe('§5.2 Responsive tests', () => {
     expect(layout).not.toBeNull();
   });
 
-  it('DOM reading order is header -> player -> enemy', () => {
+  it('DOM reading order is header -> player during setup (enemy absent)', () => {
     render(<App />);
     const layout = document.querySelector('.game-layout');
     const children = Array.from(layout!.children);
     const zoneOrder = children
       .filter((el) => el.hasAttribute('data-testid'))
       .map((el) => el.getAttribute('data-testid'));
-    // header first, then player, then enemy (matches stacking order)
+    expect(zoneOrder[0]).toBe('zone-header');
+    expect(zoneOrder[1]).toBe('zone-player');
+    expect(zoneOrder.includes('zone-enemy')).toBe(false);
+  });
+
+  it('DOM reading order is header -> player -> enemy during play', () => {
+    startGame();
+    const layout = document.querySelector('.game-layout');
+    const children = Array.from(layout!.children);
+    const zoneOrder = children
+      .filter((el) => el.hasAttribute('data-testid'))
+      .map((el) => el.getAttribute('data-testid'));
     expect(zoneOrder[0]).toBe('zone-header');
     expect(zoneOrder[1]).toBe('zone-player');
     expect(zoneOrder[2]).toBe('zone-enemy');
   });
 
-  it('boards are wrapped in board-container for square aspect ratio', () => {
+  it('setup has one board-container (player only)', () => {
     render(<App />);
+    const containers = document.querySelectorAll('.board-container');
+    expect(containers.length).toBe(1);
+  });
+
+  it('playing phase has two board-containers', () => {
+    startGame();
     const containers = document.querySelectorAll('.board-container');
     expect(containers.length).toBe(2);
   });
@@ -86,8 +116,8 @@ describe('§5.2 Responsive tests', () => {
     expect(container).not.toBeNull();
   });
 
-  it('enemy zone board-container is inside zone-enemy', () => {
-    render(<App />);
+  it('enemy zone board-container is inside zone-enemy during play', () => {
+    startGame();
     const enemyZone = screen.getByTestId('zone-enemy');
     const container = enemyZone.querySelector('.board-container');
     expect(container).not.toBeNull();
@@ -96,24 +126,15 @@ describe('§5.2 Responsive tests', () => {
 
 describe('§5.3 Behavior-preservation tests', () => {
   it('turn banner renders in header after game starts (playing phase)', () => {
-    render(<App />);
+    startGame();
     const header = screen.getByTestId('zone-header');
-    // Click Auto-Place then Start to get to playing phase
-    const autoBtn = screen.getByText('Auto-Place Ships');
-    fireEvent.click(autoBtn);
-    const startBtn = screen.getByText('Start Game');
-    fireEvent.click(startBtn);
-    // Now TurnBanner should be in the header with role="status"
     const banner = header.querySelector('[role="status"]');
     expect(banner).not.toBeNull();
     expect(banner!.textContent!.toLowerCase()).toContain('your turn');
   });
 
   it('turn banner is NOT in player or enemy zones', () => {
-    render(<App />);
-    // Get to playing phase
-    fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    startGame();
     const playerZone = screen.getByTestId('zone-player');
     const enemyZone = screen.getByTestId('zone-enemy');
     expect(playerZone.querySelectorAll('[role="status"]').length).toBe(0);
@@ -121,28 +142,36 @@ describe('§5.3 Behavior-preservation tests', () => {
   });
 
   it('player zone shows fleet damage readout during play', () => {
-    render(<App />);
-    fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    startGame();
     const playerZone = screen.getByTestId('zone-player');
     expect(playerZone.textContent).toContain('Your fleet:');
   });
 
   it('BattleScoreboard renders in enemy zone during play', () => {
-    render(<App />);
-    fireEvent.click(screen.getByText('Auto-Place Ships'));
-    fireEvent.click(screen.getByText('Start Game'));
+    startGame();
     const enemyZone = screen.getByTestId('zone-enemy');
-    // BattleScoreboard shows sunk/remaining text
     expect(enemyZone.textContent).toContain('sunk');
   });
 
-  it('side identity cues are present with text labels (not color alone)', () => {
-    render(<App />);
+  it('side identity cues are present with text labels during play', () => {
+    startGame();
     const playerZone = screen.getByTestId('zone-player');
     const enemyZone = screen.getByTestId('zone-enemy');
-    // Board titles provide side identity (eyebrow labels removed per subtraction pass)
     expect(playerZone.textContent).toContain('Your Fleet');
     expect(enemyZone.textContent).toContain('Enemy Waters');
+  });
+
+  it('START BATTLE button is present but disabled before all ships placed', () => {
+    render(<App />);
+    const btn = screen.getByText('Start Battle');
+    expect(btn).toBeTruthy();
+    expect(btn).toBeDisabled();
+  });
+
+  it('START BATTLE button becomes enabled after all ships placed', () => {
+    render(<App />);
+    fireEvent.click(screen.getByText('Auto-Place Ships'));
+    const btn = screen.getByText('Start Battle');
+    expect(btn).not.toBeDisabled();
   });
 });
