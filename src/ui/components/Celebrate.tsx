@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import type { CelebrationEvent } from '../celebrationSystem';
+import { playCelebrationSound } from '../audioContext';
 
 interface CelebrateProps {
   event: CelebrationEvent | null;
@@ -25,34 +26,6 @@ function generateParticles(count: number, intensity: number): Particle[] {
     distance: 40 + intensity * 60 + Math.random() * 30,
     size: 3 + intensity * 2 + Math.random() * 2,
   }));
-}
-
-function playCelebrationSound(freq: number, duration: number, coolToned: boolean): void {
-  if (freq === 0) return;
-  try {
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.type = coolToned ? 'sine' : 'triangle';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(
-      coolToned ? freq * 0.7 : freq * 1.5,
-      ctx.currentTime + duration / 1000 * 0.3,
-    );
-
-    const volume = coolToned ? 0.08 : 0.15;
-    gain.gain.setValueAtTime(volume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
-
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + duration / 1000);
-    osc.onended = () => ctx.close();
-  } catch {
-    // Audio unavailable
-  }
 }
 
 /**

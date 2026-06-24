@@ -108,9 +108,9 @@ export function VictoryScreen({
           <table className="endgame-screen__table">
             <thead>
               <tr>
-                <th style={{ width: 24, height: 24 }} />
+                <th className="endgame-screen__coord" style={{ width: 24 }} />
                 {Array.from({ length: BOARD_SIZE }, (_, i) => (
-                  <th key={i} className="endgame-screen__coord">
+                  <th key={i} className="endgame-screen__coord endgame-screen__coord--col">
                     {COLUMN_LABELS[i]}
                   </th>
                 ))}

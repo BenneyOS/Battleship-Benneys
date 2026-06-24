@@ -9,6 +9,7 @@ import { EnemyFleetChecklist } from './ui/components/EnemyFleetChecklist';
 import { AccuracyChip } from './ui/components/AccuracyChip';
 import { MuteButton } from './ui/components/MuteButton';
 import { Celebrate } from './ui/components/Celebrate';
+import { unlockAudio } from './ui/audioContext';
 import { VictoryScreen } from './ui/components/VictoryScreen';
 import { LogoHeader } from './ui/components/LogoHeader';
 import { deriveHeaderStatus } from './ui/headerStatus';
@@ -144,6 +145,9 @@ function App() {
       ? previewPlacement(state.game.humanBoard, previewAnchor, currentShipLength, orientation)
       : null;
 
+  // Unlock audio on any click within the game layout (covers Start Game, fire, etc.)
+  const handleLayoutClick = useCallback(() => { unlockAudio(); }, []);
+
   // Enemy grid is interactive only when it's human's turn and AI is idle
   const enemyGridInteractive = isPlaying && turn === 'human' && aiPhase === 'idle';
 
@@ -157,6 +161,7 @@ function App() {
   }, []);
 
   const handleSetupClick = useCallback((coord: Coord) => {
+    unlockAudio();
     if (!currentShipLength) return;
 
     // Touch support: first tap previews, second tap on same anchor commits
@@ -200,7 +205,7 @@ function App() {
   // --- Victory/Defeat screen ---
   if (isGameOver) {
     return (
-      <div className="game-layout" data-phase="gameOver">
+      <div className="game-layout" data-phase="gameOver" onClick={handleLayoutClick}>
         {/* Atmosphere layers */}
         <div className="atmosphere-texture" aria-hidden="true" />
         <div className="atmosphere-shimmer" aria-hidden="true" />
@@ -227,7 +232,7 @@ function App() {
   }
 
   return (
-    <div className="game-layout" data-phase={state.game.phase}>
+    <div className="game-layout" data-phase={state.game.phase} onClick={handleLayoutClick}>
       {/* Atmosphere layers */}
       <div className="atmosphere-texture" aria-hidden="true" />
       <div className="atmosphere-shimmer" aria-hidden="true" />
