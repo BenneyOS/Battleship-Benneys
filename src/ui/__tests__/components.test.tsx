@@ -17,14 +17,14 @@ describe('§6.6 Component / UI smoke tests', () => {
   describe('TurnBanner', () => {
     it('renders correct text for human turn', () => {
       const status = deriveHeaderStatus('human', 'idle', 'playing', null);
-      render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+      render(<TurnBanner status={status} gamePhase="playing" />);
       expect(screen.getByRole('status')).toHaveTextContent(/YOUR TURN/i);
       expect(screen.getByRole('status')).toHaveTextContent(/Fire at the enemy grid/i);
     });
 
     it('renders "taking aim" for AI aiming phase', () => {
       const status = deriveHeaderStatus('ai', 'aiming', 'playing', null);
-      render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+      render(<TurnBanner status={status} gamePhase="playing" />);
       expect(screen.getByRole('status')).toHaveTextContent(/Taking aim/i);
     });
 
@@ -32,20 +32,20 @@ describe('§6.6 Component / UI smoke tests', () => {
       const status = deriveHeaderStatus('ai', 'announced', 'playing', {
         actor: 'computer', coord: { x: 2, y: 2 }, outcome: 'hit',
       });
-      render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+      render(<TurnBanner status={status} gamePhase="playing" />);
       expect(screen.getByRole('status')).toHaveTextContent(/COMPUTER'S TURN/i);
     });
 
     it('renders setup phase correctly', () => {
       const status = deriveHeaderStatus('human', 'idle', 'setup', null);
-      render(<TurnBanner status={status} turnCount={0} gamePhase="setup" />);
+      render(<TurnBanner status={status} gamePhase="setup" />);
       expect(screen.getByRole('status')).toHaveTextContent(/SETUP/i);
       expect(screen.getByRole('status')).toHaveTextContent(/Place your fleet/i);
     });
 
     it('uses aria-live="polite" for announcements', () => {
       const status = deriveHeaderStatus('human', 'idle', 'playing', null);
-      render(<TurnBanner status={status} turnCount={1} gamePhase="playing" />);
+      render(<TurnBanner status={status} gamePhase="playing" />);
       expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
     });
   });

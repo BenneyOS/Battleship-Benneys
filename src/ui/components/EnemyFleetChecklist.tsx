@@ -5,8 +5,6 @@ interface EnemyFleetChecklistProps {
 }
 
 export function EnemyFleetChecklist({ ships }: EnemyFleetChecklistProps) {
-  const afloat = ships.filter((s) => !s.sunk);
-
   return (
     <div data-testid="enemy-fleet-checklist" style={{ marginTop: 8, textAlign: 'left', fontSize: 13 }}>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -29,11 +27,7 @@ export function EnemyFleetChecklist({ ships }: EnemyFleetChecklistProps) {
           </li>
         ))}
       </ul>
-      {afloat.length > 0 && afloat.length < ships.length && (
-        <div style={{ marginTop: 6, fontSize: 12, color: '#95a5a6' }}>
-          Still afloat: {afloat.map((s) => s.name).join(', ')}
-        </div>
-      )}
+
     </div>
   );
 }

@@ -24,8 +24,8 @@ const CELL_COLORS: Record<CellState, string> = {
   empty: '#1a2a3a',
   ship: '#4a7c59',
   miss: '#3a4a5a',
-  hit: '#c0392b',
-  sunk: '#7b241c',
+  hit: '#d4920b',
+  sunk: '#8b0000',
 };
 
 const CELL_SYMBOLS: Record<CellState, string> = {
@@ -33,7 +33,7 @@ const CELL_SYMBOLS: Record<CellState, string> = {
   ship: '',
   miss: '\u2022',
   hit: '\u2716',
-  sunk: '\u2716',
+  sunk: '\u2620',
 };
 
 const COLUMN_LABELS = 'ABCDEFGHIJ';

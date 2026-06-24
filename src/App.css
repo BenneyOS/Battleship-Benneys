@@ -134,13 +134,6 @@
   text-transform: uppercase;
 }
 
-.turn-banner__turn-count {
-  font-size: 11px;
-  color: #7f8c8d;
-  letter-spacing: 1px;
-  margin-left: 4px;
-}
-
 .turn-banner__prompt {
   font-size: 13px;
   color: #95a5a6;
@@ -211,13 +204,166 @@
   100% { transform: scale(1); background-color: rgba(231, 76, 60, 0.12); }
 }
 
+/* ─── Accuracy Chip ───────────────────────────────────────────────── */
+.accuracy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.accuracy-chip__icon {
+  font-size: 14px;
+}
+
+.accuracy-chip__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ecf0f1;
+  letter-spacing: 1px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.accuracy-chip__label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #7f8c8d;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.accuracy-chip--rising {
+  transform: scale(1.08);
+  box-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+}
+
+.accuracy-chip--tick {
+  transform: scale(1.02);
+}
+
+@keyframes chip-pulse-green {
+  0% { box-shadow: 0 0 0 rgba(46, 204, 113, 0); }
+  50% { box-shadow: 0 0 16px rgba(46, 204, 113, 0.5); }
+  100% { box-shadow: 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+.accuracy-chip--rising {
+  animation: chip-pulse-green 0.6s ease;
+}
+
+/* ─── Mute Button ─────────────────────────────────────────────────── */
+.mute-button {
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ecf0f1;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mute-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Sink Celebration Overlay ──────────────────────────────────── */
+.sink-celebration {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sink-celebration__callout {
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-align: center;
+  color: #e74c3c;
+  text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+  animation: callout-enter 0.4s ease-out;
+}
+
+@keyframes callout-enter {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.sink-celebration__glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  pointer-events: none;
+}
+
+.sink-celebration__particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--size, 4px);
+  height: var(--size, 4px);
+  border-radius: 50%;
+  background-color: #e74c3c;
+  animation: particle-burst 0.8s ease-out forwards;
+}
+
+.sink-celebration--finale .sink-celebration__particle {
+  background-color: #ffd700;
+}
+
+.sink-celebration__callout--intensity-1 { font-size: 20px; }
+.sink-celebration__callout--intensity-2 { font-size: 24px; }
+.sink-celebration__callout--intensity-3 { font-size: 28px; }
+.sink-celebration__callout--intensity-4 { font-size: 32px; }
+.sink-celebration__callout--intensity-5 { font-size: 36px; }
+
+.sink-celebration--finale .sink-celebration__callout {
+  color: #ffd700;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+}
+
+@keyframes particle-burst {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateX(var(--distance)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* ─── Sunk cell structural marker ───────────────────────────────── */
+/* The skull-and-crossbones (☠) symbol on sunk cells provides a structural
+   marker distinguishable without color. */
+
 /* ─── Reduced-motion: keep state/color, drop movement ────────────── */
 @media (prefers-reduced-motion: reduce) {
   .turn-banner,
   .turn-banner__icon,
-  .event-line {
+  .event-line,
+  .accuracy-chip,
+  .sink-celebration__callout,
+  .sink-celebration__particle {
     animation: none !important;
     transition: none !important;
+  }
+
+  .accuracy-chip--rising,
+  .accuracy-chip--tick {
+    transform: none !important;
+    box-shadow: none !important;
   }
 }
 
