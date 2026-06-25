@@ -15,6 +15,8 @@ interface VictoryScreenProps {
   onNewGame: () => void;
   /** Override all timing to 0 in tests */
   animationMs?: number;
+  /** Defeat: how many enemy ships the player managed to sink */
+  enemySunkCount?: number;
 }
 
 type CascadePhase = 'impact' | 'grid' | 'hierarchy' | 'action';
@@ -31,6 +33,7 @@ export function VictoryScreen({
   isVictory,
   onNewGame,
   animationMs,
+  enemySunkCount,
 }: VictoryScreenProps) {
   const [phase, setPhase] = useState<CascadePhase>('impact');
   const phaseTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -69,7 +72,7 @@ export function VictoryScreen({
       {showGrid && (
         <div className="endgame-screen__grid" data-testid="endgame-grid">
           <h3 className={`endgame-screen__grid-title endgame-screen__grid-title--${tone}`}>
-            Enemy Waters
+            {isVictory ? 'Enemy Waters' : 'Your Fleet'}
           </h3>
           <div className="endgame-screen__table-wrap">
             <table className="endgame-screen__table">
@@ -109,9 +112,9 @@ export function VictoryScreen({
       {/* Phase 4: Hierarchy cascade */}
       {showHierarchy && (
         <div className="endgame-screen__hierarchy" data-testid="endgame-hierarchy">
-          {/* Trophy */}
+          {/* Trophy / icon */}
           <div className={`endgame-screen__trophy endgame-screen__trophy--${tone}`}>
-            {isVictory ? '🏆' : '⚓'}
+            {isVictory ? '🏆' : <span className="endgame-screen__defeat-icon" aria-hidden="true" />}
           </div>
 
           {/* Title */}
@@ -126,21 +129,29 @@ export function VictoryScreen({
               : 'Your fleet has been destroyed'}
           </p>
 
-          {/* Medals row */}
+          {/* Medals row — always two balanced medals */}
           <div className="endgame-screen__medals">
             {/* Accuracy medal */}
             <div className={`endgame-screen__medal endgame-screen__medal--${tone}`} data-testid="endgame-accuracy-medal">
               <span className="endgame-screen__medal-icon">🎯</span>
-              <span className="endgame-screen__medal-value">{accuracy.percent}%</span>
+              <span className={`endgame-screen__medal-value endgame-screen__medal-value--${tone}`}>{accuracy.percent}%</span>
               <span className="endgame-screen__medal-label">ACCURACY</span>
             </div>
 
-            {/* Final blow medal (victory only) */}
-            {isVictory && lastSunkShipName && (
-              <div className="endgame-screen__medal endgame-screen__medal--victory" data-testid="endgame-finalblow-medal">
-                <span className="endgame-screen__medal-icon">💥</span>
-                <span className="endgame-screen__medal-value">{lastSunkShipName.toUpperCase()}</span>
-                <span className="endgame-screen__medal-label">FINAL BLOW</span>
+            {/* Second medal: final blow (victory) or ships sunk (defeat) */}
+            {isVictory ? (
+              lastSunkShipName && (
+                <div className="endgame-screen__medal endgame-screen__medal--victory" data-testid="endgame-finalblow-medal">
+                  <span className="endgame-screen__medal-icon">💥</span>
+                  <span className="endgame-screen__medal-value endgame-screen__medal-value--victory">{lastSunkShipName.toUpperCase()}</span>
+                  <span className="endgame-screen__medal-label">FINAL BLOW</span>
+                </div>
+              )
+            ) : (
+              <div className="endgame-screen__medal endgame-screen__medal--defeat" data-testid="endgame-sunk-medal">
+                <span className="endgame-screen__medal-icon">💀</span>
+                <span className="endgame-screen__medal-value endgame-screen__medal-value--defeat">{enemySunkCount ?? 0} / {progress.total}</span>
+                <span className="endgame-screen__medal-label">SHIPS SUNK</span>
               </div>
             )}
           </div>

@@ -1072,7 +1072,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0;
-  margin-top: var(--space-xl);
+  margin-top: var(--space-md);
   animation: hierarchy-cascade 0.5s ease-out;
   width: 100%;
 }
@@ -1093,8 +1093,43 @@
 }
 
 .endgame-screen__trophy--defeat {
-  filter: drop-shadow(0 0 8px rgba(100, 140, 180, 0.3));
-  opacity: 0.7;
+  filter: drop-shadow(0 0 8px rgba(100, 140, 180, 0.4));
+  font-size: 0;
+}
+
+/* Vector defeat icon — CSS-drawn crosshair/scope */
+.endgame-screen__defeat-icon {
+  display: inline-block;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  border: 3px solid var(--tone-cool);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(239, 83, 80, 0.3);
+  overflow: hidden;
+}
+
+.endgame-screen__defeat-icon::before,
+.endgame-screen__defeat-icon::after {
+  content: '';
+  position: absolute;
+  background: var(--tone-cool);
+}
+
+.endgame-screen__defeat-icon::before {
+  width: 3px;
+  height: 100%;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.endgame-screen__defeat-icon::after {
+  width: 100%;
+  height: 3px;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .endgame-screen__title {
@@ -1168,9 +1203,17 @@
 .endgame-screen__medal-value {
   font-family: var(--font-display);
   font-size: 14px;
-  color: var(--gold);
   letter-spacing: 1px;
+}
+
+.endgame-screen__medal-value--victory {
+  color: var(--gold);
   text-shadow: 0 0 6px rgba(255, 215, 64, 0.3);
+}
+
+.endgame-screen__medal-value--defeat {
+  color: var(--text-secondary);
+  text-shadow: 0 0 6px rgba(100, 140, 180, 0.3);
 }
 
 .endgame-screen__medal-label {
@@ -1221,11 +1264,18 @@
 }
 
 .endgame-screen__cta--defeat {
-  background: linear-gradient(135deg, #455a64, #37474f);
-  color: #b0bec5;
+  background: linear-gradient(135deg, #546e7a, #455a64);
+  color: var(--text-primary);
+  border: var(--panel-border-width) solid rgba(100, 140, 180, 0.4);
   box-shadow:
-    0 0 6px rgba(100, 140, 180, 0.3),
-    0 0 15px rgba(100, 140, 180, 0.15);
+    0 0 8px rgba(100, 140, 180, 0.35),
+    0 0 20px rgba(100, 140, 180, 0.2);
+}
+
+.endgame-screen__cta--defeat:hover {
+  box-shadow:
+    0 0 12px rgba(100, 140, 180, 0.5),
+    0 0 30px rgba(100, 140, 180, 0.3);
 }
 
 .endgame-screen__cta:hover {
