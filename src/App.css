@@ -101,6 +101,25 @@
   --type-body: 14px;       /* primary readable content — sans         */
   --type-label: 12px;      /* stat labels, chip text (uppercase) — sans */
   --type-caption: 10px;    /* hints, fine print — sans                */
+
+  /* ── Motion tokens — the 4th dimension (time + response) ──── */
+  /* Easing curves: named physics, not browser defaults           */
+  --ease-out-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);   /* decelerate to rest (hover, glow)      */
+  --ease-in-out:   cubic-bezier(0.4, 0, 0.2, 1);           /* state moves (turn handoff, tone)      */
+  --ease-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);     /* arrive, overshoot, settle (entrances) */
+  --ease-press:    cubic-bezier(0.4, 0, 0.6, 1);           /* fast compress for button press         */
+
+  /* Timing scale by role — ratios matter                         */
+  --t-micro:     100ms;    /* button press — near-instant            */
+  --t-state:     250ms;    /* turn handoff — registers, not drags    */
+  --t-entrance:  400ms;    /* panel/board entrance — felt arrival    */
+  --t-celebrate: 600ms;    /* victory — slow, sequenced, earned      */
+
+  /* Stagger step — cascade life for grouped elements             */
+  --stagger-step: 40ms;
+
+  /* Pressed-state scale — physical compression                   */
+  --press-scale: 0.96;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -167,31 +186,31 @@
 
 /* ── Opponent reveal transition ───────────────────────────────── */
 .game-stage {
-  transition: grid-template-columns var(--battle-reveal-ms, 600ms) ease;
+  transition: grid-template-columns var(--battle-reveal-ms, 600ms) var(--ease-in-out);
 }
 
 .zone-player {
-  transition: opacity 0.3s ease;
+  transition: opacity var(--t-state) var(--ease-out-soft);
 }
 
 .zone-enemy {
-  transition: opacity var(--battle-reveal-ms, 600ms) ease,
-              transform var(--battle-reveal-ms, 600ms) ease;
+  transition: opacity var(--t-celebrate) var(--ease-in-out),
+              transform var(--t-celebrate) var(--ease-in-out);
 }
 
 /* Enemy board entrance animation */
 .zone-enemy--revealing {
-  animation: enemy-slide-in var(--battle-reveal-ms, 600ms) ease both;
+  animation: enemy-slide-in var(--t-celebrate) var(--ease-overshoot) both;
 }
 
 @keyframes enemy-slide-in {
   0% {
     opacity: 0;
-    transform: translateX(60px);
+    transform: translateX(60px) scale(0.97);
   }
   100% {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
   }
 }
 
@@ -211,7 +230,7 @@
   text-transform: uppercase;
   z-index: 100;
   pointer-events: none;
-  animation: callout-flash var(--battle-reveal-ms, 600ms) ease both;
+  animation: callout-flash var(--t-celebrate) var(--ease-out-soft) both;
 }
 
 @keyframes callout-flash {
@@ -276,7 +295,7 @@
     transparent 70%
   );
   background-size: 200% 200%;
-  animation: shimmer-drift 12s ease-in-out infinite;
+  animation: shimmer-drift 12s var(--ease-in-out) infinite;
 }
 
 @keyframes shimmer-drift {
@@ -310,7 +329,7 @@
   flex-direction: column;
   align-items: center;
   padding: 4px 0 8px;
-  animation: logo-entrance 0.8s ease-out;
+  animation: logo-entrance var(--t-celebrate) var(--ease-overshoot);
 }
 
 .logo-lockup__top {
@@ -360,13 +379,13 @@
 @keyframes logo-entrance {
   0% {
     opacity: 0;
-    transform: translateY(-8px) scale(0.96);
+    transform: translateY(-12px) scale(0.94);
     filter: brightness(2);
   }
-  60% {
+  70% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: brightness(1.3);
+    transform: translateY(1px) scale(1.01);
+    filter: brightness(1.2);
   }
   100% {
     opacity: 1;
@@ -455,7 +474,7 @@
   padding: 12px 20px;
   border-radius: var(--panel-radius);
   text-align: center;
-  transition: background-color 0.4s ease, border-color 0.4s ease;
+  transition: background-color var(--t-state) var(--ease-in-out), border-color var(--t-state) var(--ease-in-out);
   border: 2px solid transparent;
 }
 
@@ -478,7 +497,7 @@
 
 .turn-banner__icon {
   font-size: var(--type-display);
-  transition: transform 0.4s ease;
+  transition: transform var(--t-state) var(--ease-in-out);
 }
 
 .turn-banner__title {
@@ -500,12 +519,12 @@
 /* Handoff pulse animation */
 @keyframes banner-pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
+  50% { transform: scale(1.04); }
   100% { transform: scale(1); }
 }
 
 .turn-banner--computer .turn-banner__icon {
-  animation: banner-pulse 0.6s ease-in-out;
+  animation: banner-pulse var(--t-celebrate) var(--ease-in-out);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -519,7 +538,7 @@
   color: var(--text-muted);
   text-align: center;
   border-radius: 4px;
-  transition: color 0.3s ease, background-color 0.3s ease;
+  transition: color var(--t-state) var(--ease-out-soft), background-color var(--t-state) var(--ease-out-soft);
   max-width: 600px;
   width: 100%;
 }
@@ -531,14 +550,14 @@
 .event-line--hit {
   color: var(--state-hit);
   font-weight: 600;
-  animation: event-flash 0.4s ease;
+  animation: event-flash var(--t-entrance) var(--ease-out-soft);
 }
 
 .event-line--sunk {
   color: var(--celebrate-sunk);
   font-weight: 700;
   background-color: rgba(194, 24, 91, 0.15);
-  animation: event-sunk 0.6s ease;
+  animation: event-sunk var(--t-celebrate) var(--ease-overshoot);
 }
 
 .event-line__callout {
@@ -578,7 +597,7 @@
   background-color: rgba(46, 134, 193, 0.3);
   border: 1px solid rgba(0, 229, 255, 0.2);
   margin-top: 8px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--t-state) var(--ease-out-soft), box-shadow var(--t-state) var(--ease-out-soft);
 }
 
 .accuracy-chip__icon {
@@ -620,7 +639,7 @@
 }
 
 .accuracy-chip--rising {
-  animation: chip-pulse-green 0.6s ease;
+  animation: chip-pulse-green var(--t-celebrate) var(--ease-out-soft);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -635,11 +654,24 @@
   color: var(--text-primary);
   font-size: var(--type-title);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--t-micro) var(--ease-out-soft),
+             transform var(--t-micro) var(--ease-press),
+             box-shadow var(--t-micro) var(--ease-out-soft);
 }
 
 .mute-button:hover {
   background-color: rgba(0, 229, 255, 0.15);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.15);
+}
+
+.mute-button:active {
+  transform: scale(var(--press-scale));
+  box-shadow: 0 0 4px rgba(0, 229, 255, 0.1);
+}
+
+.mute-button:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -658,7 +690,7 @@
   box-shadow: var(--panel-glow);
   box-sizing: border-box;
   gap: 0;
-  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  transition: border-color var(--t-state) var(--ease-in-out), box-shadow var(--t-state) var(--ease-in-out);
 }
 
 /* Tone-shift: your turn = positive (cyan), computer turn = cool (red) */
@@ -878,7 +910,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow var(--t-state) var(--ease-out-soft);
 }
 
 .celebrate__callout {
@@ -887,7 +919,7 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   text-align: center;
-  animation: celebrate-callout-enter 0.4s ease-out;
+  animation: celebrate-callout-enter var(--t-entrance) var(--ease-overshoot);
   position: relative;
   z-index: 1;
 }
@@ -952,11 +984,12 @@
   height: var(--size, 4px);
   border-radius: 50%;
   background-color: var(--particle-color, var(--celebrate-sunk));
-  animation: celebrate-particle-burst 0.8s ease-out forwards;
+  animation: celebrate-particle-burst var(--t-celebrate) var(--ease-out-soft) forwards;
 }
 
 @keyframes celebrate-callout-enter {
   0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.05); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -992,7 +1025,7 @@
   padding: var(--space-md) var(--space-sm);
   position: relative;
   z-index: 50;
-  animation: endgame-fade-in 0.6s ease-out;
+  animation: endgame-fade-in var(--t-celebrate) var(--ease-overshoot);
   max-width: var(--stage-single-max);
   margin: 0 auto;
   width: 100%;
@@ -1010,7 +1043,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  transition: opacity 0.8s ease;
+  transition: opacity var(--t-celebrate) var(--ease-out-soft);
   background: radial-gradient(
     ellipse at center,
     var(--endgame-glow-soft) 0%,
@@ -1026,11 +1059,12 @@
 .endgame-screen__grid {
   position: relative;
   margin: 0 auto;
-  animation: endgame-grid-emerge 0.5s ease-out;
+  animation: endgame-grid-emerge var(--t-entrance) var(--ease-overshoot);
 }
 
 @keyframes endgame-grid-emerge {
-  0% { opacity: 0; transform: scale(0.95); }
+  0% { opacity: 0; transform: scale(0.94); }
+  70% { opacity: 1; transform: scale(1.01); }
   100% { opacity: 1; transform: scale(1); }
 }
 
@@ -1082,7 +1116,7 @@
   width: 44px;
   height: 44px;
   border: var(--panel-border-width) solid rgba(0, 229, 255, 0.15);
-  transition: background-color 0.2s;
+  transition: background-color var(--t-micro) var(--ease-out-soft);
 }
 
 .endgame-screen__cell--empty { background-color: var(--cell-bg); }
@@ -1098,13 +1132,14 @@
   align-items: center;
   gap: 0;
   margin-top: var(--space-md);
-  animation: hierarchy-cascade 0.5s ease-out;
+  animation: hierarchy-cascade var(--t-entrance) var(--ease-overshoot);
   width: 100%;
 }
 
 @keyframes hierarchy-cascade {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0; transform: translateY(20px) scale(0.97); }
+  70% { opacity: 1; transform: translateY(-2px) scale(1.005); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .endgame-screen__trophy {
@@ -1242,15 +1277,16 @@
 /* Action lock: NEW GAME CTA — width matches medal row */
 .endgame-screen__action {
   margin-top: var(--space-lg);
-  animation: action-arrive 0.5s ease-out;
+  animation: action-arrive var(--t-entrance) var(--ease-overshoot);
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
 @keyframes action-arrive {
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0; transform: translateY(10px) scale(0.97); }
+  70% { opacity: 1; transform: translateY(-1px) scale(1.005); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .endgame-screen__cta {
@@ -1261,7 +1297,8 @@
   border: none;
   border-radius: var(--panel-radius);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--t-micro) var(--ease-press),
+             box-shadow var(--t-micro) var(--ease-out-soft);
   width: 100%;
   max-width: 416px; /* 2 × 200px medals + 16px gap */
   box-sizing: border-box;
@@ -1293,6 +1330,19 @@
     0 0 30px var(--endgame-glow-soft);
 }
 
+.endgame-screen__cta:active {
+  transform: scale(var(--press-scale));
+  box-shadow:
+    0 0 4px var(--endgame-glow),
+    0 0 10px var(--endgame-glow-soft);
+  transition-duration: calc(var(--t-micro) * 0.6);
+}
+
+.endgame-screen__cta:focus-visible {
+  outline: 2px solid var(--endgame-accent);
+  outline-offset: 2px;
+}
+
 /* ── Sunk cell structural marker ──────────────────────────────────── */
 /* The skull-and-crossbones on sunk cells provides a structural
    marker distinguishable without color. */
@@ -1312,7 +1362,8 @@
     0 0 6px rgba(255, 143, 0, 0.5),
     0 0 16px rgba(255, 143, 0, 0.3),
     0 0 32px rgba(255, 143, 0, 0.15) !important;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: box-shadow var(--t-micro) var(--ease-out-soft),
+             transform var(--t-micro) var(--ease-press);
 }
 
 /* Play glyph on Start Battle via CSS ::before (keeps text content clean for tests) */
@@ -1326,6 +1377,19 @@
     0 0 24px rgba(255, 143, 0, 0.4),
     0 0 48px rgba(255, 143, 0, 0.2) !important;
   transform: scale(1.03);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(var(--press-scale));
+  box-shadow:
+    0 0 4px rgba(255, 143, 0, 0.4),
+    0 0 8px rgba(255, 143, 0, 0.2) !important;
+  transition-duration: calc(var(--t-micro) * 0.6);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--warm-cta);
+  outline-offset: 2px;
 }
 
 /* Disabled state — muted, no glow, not interactive */
@@ -1349,13 +1413,28 @@
   background-color: var(--panel-fill);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color var(--t-micro) var(--ease-out-soft),
+             border-color var(--t-micro) var(--ease-out-soft),
+             transform var(--t-micro) var(--ease-press),
+             box-shadow var(--t-micro) var(--ease-out-soft);
 }
 
 .btn-secondary:hover {
   background-color: rgba(27, 79, 114, 0.8);
   border-color: var(--neon-cyan);
   color: var(--text-primary);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.12);
+}
+
+.btn-secondary:active {
+  transform: scale(var(--press-scale));
+  box-shadow: 0 0 4px rgba(0, 229, 255, 0.08);
+  transition-duration: calc(var(--t-micro) * 0.6);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1382,6 +1461,10 @@
   min-height: 28px;
   display: flex;
   align-items: center;
+  transition: background-color var(--t-micro) var(--ease-out-soft),
+             transform var(--t-micro) var(--ease-out-soft);
+  animation: chip-entrance var(--t-entrance) var(--ease-overshoot) both;
+  animation-delay: calc(var(--stagger-step) * var(--chip-i, 0));
 }
 
 .setup-controls__ship-chip--placed {
@@ -1417,7 +1500,10 @@
   font-family: var(--font-body);
   font-size: var(--type-body);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color var(--t-micro) var(--ease-out-soft),
+             border-color var(--t-micro) var(--ease-out-soft),
+             transform var(--t-micro) var(--ease-press),
+             box-shadow var(--t-micro) var(--ease-out-soft);
   flex: 1;
   max-width: 200px;
   justify-content: center;
@@ -1426,11 +1512,20 @@
 .btn-rotate:hover {
   background-color: rgba(27, 79, 114, 0.8);
   border-color: var(--neon-cyan);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.12);
 }
 
 .btn-rotate:active {
+  transform: scale(var(--press-scale));
   background-color: rgba(0, 229, 255, 0.15);
   border-color: var(--neon-cyan);
+  box-shadow: 0 0 4px rgba(0, 229, 255, 0.08);
+  transition-duration: calc(var(--t-micro) * 0.6);
+}
+
+.btn-rotate:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
 }
 
 .btn-rotate__icon {
@@ -1476,9 +1571,113 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   REDUCED MOTION — keep state/color, drop movement
+   MOTION SYSTEM — entrances, stagger, anticipation, board cells
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Board cell transitions (token-based) ──────────────────────── */
+.board-cell {
+  transition: background-color var(--t-micro) var(--ease-out-soft),
+             box-shadow var(--t-micro) var(--ease-out-soft),
+             transform var(--t-micro) var(--ease-press);
+}
+
+.board-cell--interactive:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
+}
+
+.board-cell--interactive:active {
+  transform: scale(var(--press-scale));
+  transition-duration: calc(var(--t-micro) * 0.6);
+}
+
+/* ── Chip entrance — staggered overshoot ────────────────────────── */
+@keyframes chip-entrance {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Companion panel entrance — overshoot-and-settle ───────────── */
+.companion-panel {
+  animation: panel-entrance var(--t-entrance) var(--ease-overshoot) both;
+}
+
+@keyframes panel-entrance {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.005);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Board bezel entrance ──────────────────────────────────────── */
+.board-bezel {
+  animation: panel-entrance var(--t-entrance) var(--ease-overshoot) both;
+}
+
+/* ── Endgame screen entrances — overshoot + stagger ──────────── */
+.endgame-screen {
+  animation: endgame-fade-in var(--t-celebrate) var(--ease-overshoot);
+}
+
+.endgame-screen__grid {
+  animation: endgame-grid-emerge var(--t-entrance) var(--ease-overshoot);
+}
+
+.endgame-screen__hierarchy {
+  animation: hierarchy-cascade var(--t-entrance) var(--ease-overshoot) both;
+}
+
+.endgame-screen__action {
+  animation: action-arrive var(--t-entrance) var(--ease-overshoot) both;
+}
+
+.endgame-screen__medal {
+  animation: panel-entrance var(--t-entrance) var(--ease-overshoot) both;
+  animation-delay: calc(var(--stagger-step) * var(--medal-i, 0));
+}
+
+/* ── Anticipation hint — Start Battle pulses when fleet complete ── */
+@keyframes anticipation-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 6px rgba(255,143,0,0.5), 0 0 16px rgba(255,143,0,0.3), 0 0 32px rgba(255,143,0,0.15); }
+  50% { transform: scale(1.02); box-shadow: 0 0 10px rgba(255,143,0,0.7), 0 0 24px rgba(255,143,0,0.4), 0 0 40px rgba(255,143,0,0.2); }
+  100% { transform: scale(1); box-shadow: 0 0 6px rgba(255,143,0,0.5), 0 0 16px rgba(255,143,0,0.3), 0 0 32px rgba(255,143,0,0.15); }
+}
+
+.btn-primary[data-ready="true"]:not(:disabled) {
+  animation: anticipation-pulse 2s var(--ease-in-out) infinite;
+}
+
+/* ── Celebrate particle entrance — token-based ────────────────── */
+.celebrate__particle {
+  animation: celebrate-particle-burst var(--t-celebrate) var(--ease-out-soft) forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION — first-class parallel design (not an off-switch)
+   Instant state changes, still communicative via color/position.
    ═══════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
+  /* ── Global: kill all animation/transition but keep static state ─── */
+  /* Elements appear in their final state — color/position still communicate */
+
   .turn-banner,
   .turn-banner__icon,
   .event-line,
@@ -1487,7 +1686,7 @@
     transition: none !important;
   }
 
-  /* Shared celebration: deliver info instantly, no staged motion */
+  /* Celebration: deliver info instantly, no staged motion */
   .celebrate,
   .celebrate__callout,
   .celebrate__particle,
@@ -1496,11 +1695,12 @@
     transition: none !important;
   }
 
-  /* Endgame screen: show all content instantly */
+  /* Endgame: all content appears instantly, positioned correctly */
   .endgame-screen,
   .endgame-screen__grid,
   .endgame-screen__hierarchy,
-  .endgame-screen__action {
+  .endgame-screen__action,
+  .endgame-screen__medal {
     animation: none !important;
     transition: none !important;
   }
@@ -1511,7 +1711,7 @@
     box-shadow: none !important;
   }
 
-  /* Suppress atmosphere motion + logo entrance; keep static visuals */
+  /* Atmosphere + logo: static, no drift/entrance */
   .atmosphere-shimmer {
     animation: none !important;
   }
@@ -1520,7 +1720,7 @@
     animation: none !important;
   }
 
-  /* Phase-aware reflow: instant, no animated transition */
+  /* Phase reflow: instant layout change, no animated transition */
   .zone-player,
   .zone-enemy {
     transition: none !important;
@@ -1530,7 +1730,7 @@
     transition: none !important;
   }
 
-  /* Opponent reveal: appears in place, no slide/ease */
+  /* Opponent reveal: in place, no slide */
   .zone-enemy--revealing {
     animation: none !important;
   }
@@ -1539,8 +1739,51 @@
     animation: none !important;
   }
 
-  /* HUD console: instant tone-shift, no transition */
+  /* HUD console: instant tone-shift */
   .hud-console {
+    transition: none !important;
+  }
+
+  /* Panel/board entrances: instant appearance */
+  .companion-panel,
+  .board-bezel {
+    animation: none !important;
+  }
+
+  /* Chip entrances: instant */
+  .setup-controls__ship-chip {
+    animation: none !important;
+  }
+
+  /* Board cells: instant state change, no animated transition */
+  .board-cell {
+    transition: none !important;
+  }
+
+  /* Anticipation pulse: off — button still shows enabled state via color */
+  .btn-primary[data-ready="true"]:not(:disabled) {
+    animation: none !important;
+  }
+
+  /* Pressed state: instant compression (still communicates "press registered")
+     via scale — no transition needed, the snap IS the feedback */
+  .btn-primary:active:not(:disabled),
+  .btn-secondary:active,
+  .btn-rotate:active,
+  .mute-button:active,
+  .endgame-screen__cta:active,
+  .board-cell--interactive:active {
+    transform: scale(var(--press-scale));
+    transition: none !important;
+  }
+
+  /* Hover: instant state change (color communicates "this is interactive") */
+  .btn-primary:hover:not(:disabled),
+  .btn-secondary:hover,
+  .btn-rotate:hover,
+  .mute-button:hover,
+  .endgame-screen__cta:hover,
+  .board-cell--interactive:hover {
     transition: none !important;
   }
 }

@@ -136,18 +136,21 @@ export function BoardGrid({
                         onCellHover(coord);
                       }
                     }}
+                    className={[
+                      'board-cell',
+                      isClickable && cellState === 'empty' ? 'board-cell--interactive' : '',
+                    ].filter(Boolean).join(' ')}
                     style={{
                       width: 36,
                       height: 36,
                       textAlign: 'center',
                       backgroundColor: bg,
                       border: '1px solid rgba(0, 229, 255, 0.2)',
-                      boxShadow: CELL_SHADOWS[cellState],
+                      boxShadow: cellState === 'empty' ? undefined : CELL_SHADOWS[cellState],
                       cursor: isClickable ? 'pointer' : 'default',
                       color: cellState === 'miss' ? 'var(--text-muted)' : 'var(--text-primary)',
                       fontSize: 16,
                       fontWeight: 'bold',
-                      transition: 'background-color 0.15s, box-shadow 0.15s',
                     }}
                   >
                     {CELL_SYMBOLS[cellState]}
