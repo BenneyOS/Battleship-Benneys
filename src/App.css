@@ -1642,15 +1642,11 @@
 }
 
 .endgame-screen__hierarchy {
-  animation: hierarchy-cascade var(--t-entrance) var(--ease-overshoot);
-  animation-delay: calc(var(--stagger-step) * 3);
-  animation-fill-mode: both;
+  animation: hierarchy-cascade var(--t-entrance) var(--ease-overshoot) both;
 }
 
 .endgame-screen__action {
-  animation: action-arrive var(--t-entrance) var(--ease-overshoot);
-  animation-delay: calc(var(--stagger-step) * 6);
-  animation-fill-mode: both;
+  animation: action-arrive var(--t-entrance) var(--ease-overshoot) both;
 }
 
 .endgame-screen__medal {
@@ -1669,11 +1665,7 @@
   animation: anticipation-pulse 2s var(--ease-in-out) infinite;
 }
 
-/* ── Celebrate particle + callout entrances — token-based ─────── */
-.celebrate__callout {
-  animation: celebrate-callout-enter var(--t-state) var(--ease-overshoot);
-}
-
+/* ── Celebrate particle entrance — token-based ────────────────── */
 .celebrate__particle {
   animation: celebrate-particle-burst var(--t-celebrate) var(--ease-out-soft) forwards;
 }
