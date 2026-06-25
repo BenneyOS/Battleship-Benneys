@@ -941,6 +941,10 @@
 /* ── Spacing tokens (8px system) ────────────────────────────────────── */
 /* xs=8  sm=16  md=24  lg=32  xl=48  2xl=64                             */
 
+/* ── Tone-driven accent — one token swap drives the whole screen ──── */
+.endgame-screen[data-tone="victory"] { --endgame-accent: var(--gold); --endgame-glow: rgba(255, 215, 64, 0.4); --endgame-glow-soft: rgba(255, 215, 64, 0.15); }
+.endgame-screen[data-tone="defeat"]  { --endgame-accent: var(--tone-cool); --endgame-glow: rgba(239, 83, 80, 0.3); --endgame-glow-soft: rgba(239, 83, 80, 0.1); }
+
 .endgame-screen {
   grid-column: 1 / -1;
   grid-row: 1 / -1;
@@ -964,27 +968,16 @@
   100% { opacity: 1; }
 }
 
-/* Impact phase: full-screen glow */
+/* Impact phase: full-screen glow — tone-driven, on bright-arcade field */
 .endgame-screen__impact {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   transition: opacity 0.8s ease;
-}
-
-.endgame-screen--victory .endgame-screen__impact {
   background: radial-gradient(
     ellipse at center,
-    rgba(255, 215, 64, 0.25) 0%,
-    transparent 70%
-  );
-}
-
-.endgame-screen--defeat .endgame-screen__impact {
-  background: radial-gradient(
-    ellipse at center,
-    rgba(100, 140, 180, 0.15) 0%,
+    var(--endgame-glow-soft) 0%,
     transparent 70%
   );
 }
@@ -1014,14 +1007,10 @@
   text-transform: uppercase;
 }
 
-.endgame-screen__grid-title--victory {
-  color: var(--gold);
-  text-shadow: 0 0 8px rgba(255, 215, 64, 0.4);
-}
-
+.endgame-screen__grid-title--victory,
 .endgame-screen__grid-title--defeat {
-  color: #78909c;
-  text-shadow: 0 0 8px rgba(100, 140, 180, 0.3);
+  color: var(--endgame-accent);
+  text-shadow: 0 0 8px var(--endgame-glow);
 }
 
 .endgame-screen__table-wrap {
@@ -1083,40 +1072,45 @@
 }
 
 .endgame-screen__trophy {
-  font-size: 48px;
   line-height: 1;
   margin-bottom: var(--space-md);
+  filter: drop-shadow(0 0 10px var(--endgame-glow));
 }
 
-.endgame-screen__trophy--victory {
-  filter: drop-shadow(0 0 12px rgba(255, 215, 64, 0.5));
-}
-
-.endgame-screen__trophy--defeat {
-  filter: drop-shadow(0 0 8px rgba(100, 140, 180, 0.4));
-  font-size: 0;
-}
-
-/* Vector defeat icon — CSS-drawn crosshair/scope */
-.endgame-screen__defeat-icon {
+/* ── Vector icons — CSS-drawn, tone-recolored ────────────────────── */
+.endgame-screen__vector-icon {
   display: inline-block;
   width: 44px;
   height: 44px;
   position: relative;
-  border: 3px solid var(--tone-cool);
+}
+
+/* Star mark (victory) — CSS 5-point star via clip-path */
+.endgame-screen__vector-icon--star {
+  background: var(--endgame-accent);
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%, 68% 57%,
+    79% 91%, 50% 70%, 21% 91%, 32% 57%,
+    2% 35%, 39% 35%
+  );
+}
+
+/* Crosshair mark (defeat) — CSS-drawn scope */
+.endgame-screen__vector-icon--crosshair {
+  border: 3px solid var(--endgame-accent);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(239, 83, 80, 0.3);
+  box-shadow: 0 0 10px var(--endgame-glow);
   overflow: hidden;
 }
 
-.endgame-screen__defeat-icon::before,
-.endgame-screen__defeat-icon::after {
+.endgame-screen__vector-icon--crosshair::before,
+.endgame-screen__vector-icon--crosshair::after {
   content: '';
   position: absolute;
-  background: var(--tone-cool);
+  background: var(--endgame-accent);
 }
 
-.endgame-screen__defeat-icon::before {
+.endgame-screen__vector-icon--crosshair::before {
   width: 3px;
   height: 100%;
   top: 0;
@@ -1124,7 +1118,7 @@
   transform: translateX(-50%);
 }
 
-.endgame-screen__defeat-icon::after {
+.endgame-screen__vector-icon--crosshair::after {
   width: 100%;
   height: 3px;
   left: 0;
@@ -1138,20 +1132,13 @@
   margin: 0 0 var(--space-sm);
 }
 
-.endgame-screen__title--victory {
-  font-size: 28px;
-  color: var(--gold);
-  text-shadow:
-    0 0 15px rgba(255, 215, 64, 0.6),
-    0 0 30px rgba(255, 215, 64, 0.3);
-}
-
+.endgame-screen__title--victory,
 .endgame-screen__title--defeat {
-  font-size: 24px;
-  color: #78909c;
+  font-size: 28px;
+  color: var(--endgame-accent);
   text-shadow:
-    0 0 10px rgba(100, 140, 180, 0.4),
-    0 0 20px rgba(100, 140, 180, 0.2);
+    0 0 15px var(--endgame-glow),
+    0 0 30px var(--endgame-glow-soft);
 }
 
 .endgame-screen__fleet-count {
@@ -1185,14 +1172,10 @@
   box-sizing: border-box;
 }
 
-.endgame-screen__medal--victory {
-  border-color: rgba(255, 215, 64, 0.3);
-  box-shadow: 0 0 8px rgba(255, 215, 64, 0.15);
-}
-
+.endgame-screen__medal--victory,
 .endgame-screen__medal--defeat {
-  border-color: rgba(100, 140, 180, 0.2);
-  box-shadow: 0 0 8px rgba(100, 140, 180, 0.1);
+  border-color: var(--endgame-glow);
+  box-shadow: 0 0 8px var(--endgame-glow-soft);
 }
 
 .endgame-screen__medal-icon {
@@ -1206,14 +1189,10 @@
   letter-spacing: 1px;
 }
 
-.endgame-screen__medal-value--victory {
-  color: var(--gold);
-  text-shadow: 0 0 6px rgba(255, 215, 64, 0.3);
-}
-
+.endgame-screen__medal-value--victory,
 .endgame-screen__medal-value--defeat {
-  color: var(--text-secondary);
-  text-shadow: 0 0 6px rgba(100, 140, 180, 0.3);
+  color: var(--endgame-accent);
+  text-shadow: 0 0 6px var(--endgame-glow);
 }
 
 .endgame-screen__medal-label {
@@ -1256,37 +1235,26 @@
 
 .endgame-screen__cta--victory {
   background: var(--warm-cta-gradient);
-  color: var(--text-primary);
-  box-shadow:
-    0 0 8px rgba(255, 143, 0, 0.5),
-    0 0 20px rgba(255, 143, 0, 0.3),
-    0 0 40px rgba(255, 143, 0, 0.15);
 }
 
 .endgame-screen__cta--defeat {
   background: linear-gradient(135deg, #546e7a, #455a64);
-  color: var(--text-primary);
-  border: var(--panel-border-width) solid rgba(100, 140, 180, 0.4);
-  box-shadow:
-    0 0 8px rgba(100, 140, 180, 0.35),
-    0 0 20px rgba(100, 140, 180, 0.2);
 }
 
-.endgame-screen__cta--defeat:hover {
+.endgame-screen__cta--victory,
+.endgame-screen__cta--defeat {
+  color: var(--text-primary);
+  border: var(--panel-border-width) solid var(--endgame-glow);
   box-shadow:
-    0 0 12px rgba(100, 140, 180, 0.5),
-    0 0 30px rgba(100, 140, 180, 0.3);
+    0 0 8px var(--endgame-glow),
+    0 0 20px var(--endgame-glow-soft);
 }
 
 .endgame-screen__cta:hover {
   transform: scale(1.04);
-}
-
-.endgame-screen__cta--victory:hover {
   box-shadow:
-    0 0 12px rgba(255, 143, 0, 0.6),
-    0 0 30px rgba(255, 143, 0, 0.4),
-    0 0 60px rgba(255, 143, 0, 0.2);
+    0 0 12px var(--endgame-glow),
+    0 0 30px var(--endgame-glow-soft);
 }
 
 /* ── Sunk cell structural marker ──────────────────────────────────── */
@@ -1616,9 +1584,9 @@
   }
 
   /* Mobile endgame screen */
-  .endgame-screen__title--victory { font-size: 20px; letter-spacing: 4px; }
-  .endgame-screen__title--defeat { font-size: 18px; letter-spacing: 3px; }
-  .endgame-screen__trophy { font-size: 36px; }
+  .endgame-screen__title--victory,
+  .endgame-screen__title--defeat { font-size: 20px; letter-spacing: 4px; }
+  .endgame-screen__trophy { margin-bottom: var(--space-sm); }
   .endgame-screen__medals { flex-direction: column; gap: var(--space-sm); align-items: center; }
   .endgame-screen__medal { max-width: 280px; width: 100%; }
   .endgame-screen__cell { width: 32px; height: 32px; }
