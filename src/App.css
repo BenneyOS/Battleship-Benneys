@@ -1583,7 +1583,7 @@
 
 .board-cell--interactive:hover {
   filter: brightness(1.15);
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.25) !important;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.25);
 }
 
 .board-cell--interactive:active {
