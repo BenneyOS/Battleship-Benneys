@@ -88,10 +88,25 @@
   /* ── Tone (reuse celebration/side-identity) ─────────────────── */
   --tone-positive: var(--side-player);
   --tone-cool: var(--side-enemy);
+
+  /* ── Stage — fit-to-viewport bounds ────────────────────────── */
+  --stage-max-width: 1100px;     /* two-board battle cap              */
+  --stage-single-max: 520px;     /* single-board screens (setup/end)  */
+  --stage-min-width: 320px;      /* legibility + tap-target floor     */
+  --stage-gutter: 16px;          /* outer margin to viewport edge     */
+
+  /* ── Type ramp — 5 steps, two faces ────────────────────────── */
+  --type-display: 28px;    /* logo, VICTORY/DEFEAT, YOUR TURN — pixel */
+  --type-title: 16px;      /* board titles, screen headings — pixel   */
+  --type-body: 14px;       /* primary readable content — sans         */
+  --type-label: 12px;      /* stat labels, chip text (uppercase) — sans */
+  --type-caption: 10px;    /* hints, fine print — sans                */
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   THREE-ZONE LAYOUT
+   FIT-TO-VIEWPORT STAGE
+   Centered both axes · scales to fit · capped at max · min bounds
+   Everything anchors to the stage, not the document.
    ═══════════════════════════════════════════════════════════════════════ */
 .game-layout {
   min-height: 100vh;
@@ -103,6 +118,19 @@
   );
   color: var(--text-primary);
   font-family: var(--font-body);
+  font-size: var(--type-body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--stage-gutter);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Inner stage container — holds all game content within bounds */
+.game-stage {
   display: grid;
   grid-template-areas:
     'header header'
@@ -110,25 +138,35 @@
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto 1fr;
   gap: 0;
-  padding: 0;
+  width: 100%;
+  max-width: var(--stage-max-width);
+  min-width: var(--stage-min-width);
   position: relative;
-  overflow: hidden;
+  z-index: 1;
 }
 
 /* ── Phase-aware layout: setup = single centered board ─────────── */
-.game-layout[data-phase="setup"] {
+.game-stage[data-phase="setup"] {
   grid-template-areas:
     'header'
     'player';
   grid-template-columns: 1fr;
+  max-width: var(--stage-single-max);
 }
 
-.game-layout[data-phase="setup"] .zone-player {
+.game-stage[data-phase="setup"] .zone-player {
   border-right: none;
 }
 
+/* ── Game-over layout: single centered column ─────────────────── */
+.game-stage[data-phase="gameOver"] {
+  grid-template-areas: 'content';
+  grid-template-columns: 1fr;
+  max-width: var(--stage-single-max);
+}
+
 /* ── Opponent reveal transition ───────────────────────────────── */
-.game-layout {
+.game-stage {
   transition: grid-template-columns var(--battle-reveal-ms, 600ms) ease;
 }
 
@@ -164,7 +202,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: var(--type-body);
   letter-spacing: 3px;
   color: var(--neon-cyan);
   text-shadow:
@@ -255,12 +293,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 20px 12px;
+  padding: var(--space-sm) var(--space-md) var(--space-xs);
   background: linear-gradient(180deg, rgba(5, 20, 45, 0.8) 0%, rgba(15, 52, 96, 0.6) 100%);
   border-bottom: 2px solid var(--neon-cyan);
   box-shadow: 0 2px 20px rgba(0, 229, 255, 0.15);
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 10;
 }
 
@@ -285,7 +322,7 @@
 
 .logo-lockup__benneys {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: var(--type-label);
   color: var(--neon-cyan);
   text-transform: uppercase;
   letter-spacing: 4px;
@@ -296,7 +333,7 @@
 
 .logo-lockup__battleship {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: var(--type-display);
   color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 6px;
@@ -346,7 +383,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
+  padding: var(--space-sm);
   border-right: 1px solid rgba(0, 229, 255, 0.15);
   border-left: 3px solid var(--side-player);
   background-color: rgba(41, 182, 246, 0.04);
@@ -362,7 +399,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
+  padding: var(--space-sm);
   border-right: 3px solid var(--side-enemy);
   background-color: rgba(239, 83, 80, 0.04);
   position: relative;
@@ -440,13 +477,13 @@
 }
 
 .turn-banner__icon {
-  font-size: 22px;
+  font-size: var(--type-display);
   transition: transform 0.4s ease;
 }
 
 .turn-banner__title {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--type-title);
   font-weight: 800;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -455,7 +492,7 @@
 
 .turn-banner__prompt {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: var(--type-body);
   color: var(--text-secondary);
   margin-top: var(--space-xs);
 }
@@ -478,7 +515,7 @@
   margin-top: 6px;
   padding: 4px var(--space-sm);
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: var(--type-body);
   color: var(--text-muted);
   text-align: center;
   border-radius: 4px;
@@ -507,7 +544,7 @@
 .event-line__callout {
   display: block;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 800;
   letter-spacing: 2px;
   color: var(--celebrate-sunk);
@@ -545,12 +582,12 @@
 }
 
 .accuracy-chip__icon {
-  font-size: 14px;
+  font-size: var(--type-body);
 }
 
 .accuracy-chip__value {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 700;
   color: var(--gold);
   letter-spacing: 1px;
@@ -561,7 +598,7 @@
 
 .accuracy-chip__label {
   font-family: var(--font-display);
-  font-size: 8px;
+  font-size: var(--type-caption);
   color: var(--text-secondary);
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -596,7 +633,7 @@
   border: var(--panel-border-width) solid var(--panel-border-color);
   background-color: rgba(46, 134, 193, 0.2);
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: var(--type-title);
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -613,7 +650,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 680px;
+  max-width: var(--stage-max-width);
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--panel-radius);
   background-color: var(--panel-fill);
@@ -680,7 +717,7 @@
 /* Turn count stat display */
 .hud-console__stat-value {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--type-title);
   color: var(--text-primary);
   letter-spacing: 1px;
   line-height: 1;
@@ -688,7 +725,7 @@
 
 .hud-console__stat-label {
   font-family: var(--font-display);
-  font-size: 7px;
+  font-size: var(--type-caption);
   color: var(--text-muted);
   letter-spacing: 2px;
   margin-top: 2px;
@@ -711,12 +748,12 @@
 }
 
 .hud-console .turn-banner__title {
-  font-size: 11px;
+  font-size: var(--type-label);
   letter-spacing: 2px;
 }
 
 .hud-console .turn-banner__icon {
-  font-size: 16px;
+  font-size: var(--type-title);
 }
 
 /* Hide "Fire at the enemy grid" prompt inside HUD — DOM preserved for tests */
@@ -730,7 +767,7 @@
   border: none;
   background: none;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--type-label);
 }
 
 /* Inside HUD: flatten event line */
@@ -738,7 +775,7 @@
   margin-top: 0;
   padding: 0;
   max-width: none;
-  font-size: 11px;
+  font-size: var(--type-label);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -750,7 +787,7 @@
   border: none;
   background: none;
   padding: 4px;
-  font-size: 14px;
+  font-size: var(--type-body);
 }
 
 /* ── HUD Console tone-shift on child text ───────────────────────── */
@@ -810,16 +847,16 @@
   }
 
   .hud-console .turn-banner__title {
-    font-size: 9px;
+    font-size: var(--type-caption);
     letter-spacing: 1px;
   }
 
   .hud-console .turn-banner__icon {
-    font-size: 14px;
+    font-size: var(--type-body);
   }
 
   .hud-console .event-line {
-    font-size: 10px;
+    font-size: var(--type-caption);
   }
 }
 
@@ -857,19 +894,19 @@
 
 /* Tier-specific callout styling */
 .celebrate__callout--micro {
-  font-size: 12px;
+  font-size: var(--type-label);
   color: var(--state-hit);
   text-shadow: 0 0 8px rgba(255, 109, 0, 0.4);
 }
 
 .celebrate__callout--sink {
-  font-size: 18px;
+  font-size: var(--type-title);
   color: var(--celebrate-sunk);
   text-shadow: 0 0 20px rgba(233, 30, 99, 0.5);
 }
 
 .celebrate__callout--milestone {
-  font-size: 14px;
+  font-size: var(--type-body);
   font-family: var(--font-body);
   font-weight: 600;
   letter-spacing: 1px;
@@ -878,19 +915,19 @@
 }
 
 .celebrate__callout--phase-complete {
-  font-size: 16px;
+  font-size: var(--type-title);
   color: var(--neon-cyan);
   text-shadow: 0 0 15px rgba(0, 229, 255, 0.6);
 }
 
 .celebrate__callout--victory {
-  font-size: 24px;
+  font-size: var(--type-display);
   color: var(--celebrate-finale);
   text-shadow: 0 0 30px rgba(255, 215, 64, 0.6);
 }
 
 .celebrate__callout--defeat {
-  font-size: 18px;
+  font-size: var(--type-title);
   color: #78909c;
   text-shadow: 0 0 12px rgba(100, 140, 180, 0.4);
 }
@@ -951,13 +988,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: var(--space-xl) var(--space-sm);
+  justify-content: center;
+  padding: var(--space-md) var(--space-sm);
   position: relative;
   z-index: 50;
-  min-height: 100vh;
   animation: endgame-fade-in 0.6s ease-out;
-  max-width: 520px;
+  max-width: var(--stage-single-max);
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
@@ -1001,7 +1037,7 @@
 .endgame-screen__grid-title {
   text-align: center;
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: var(--type-caption);
   letter-spacing: 2px;
   margin: 0 0 var(--space-sm);
   text-transform: uppercase;
@@ -1030,7 +1066,7 @@
   padding-right: var(--space-sm);
   color: var(--text-secondary);
   font-family: var(--font-display);
-  font-size: 7px;
+  font-size: var(--type-caption);
   vertical-align: middle;
 }
 
@@ -1134,7 +1170,7 @@
 
 .endgame-screen__title--victory,
 .endgame-screen__title--defeat {
-  font-size: 28px;
+  font-size: var(--type-display);
   color: var(--endgame-accent);
   text-shadow:
     0 0 15px var(--endgame-glow),
@@ -1143,7 +1179,7 @@
 
 .endgame-screen__fleet-count {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: var(--type-label);
   letter-spacing: 2px;
   color: var(--text-secondary);
   margin: 0 0 var(--space-lg);
@@ -1179,13 +1215,13 @@
 }
 
 .endgame-screen__medal-icon {
-  font-size: 24px;
+  font-size: var(--type-display);
   margin-bottom: var(--space-xs);
 }
 
 .endgame-screen__medal-value {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: var(--type-body);
   letter-spacing: 1px;
 }
 
@@ -1197,7 +1233,7 @@
 
 .endgame-screen__medal-label {
   font-family: var(--font-display);
-  font-size: 7px;
+  font-size: var(--type-caption);
   color: var(--text-muted);
   letter-spacing: 2px;
   margin-top: var(--space-xs);
@@ -1219,7 +1255,7 @@
 
 .endgame-screen__cta {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: var(--type-body);
   letter-spacing: 3px;
   padding: var(--space-sm) var(--space-lg);
   border: none;
@@ -1269,7 +1305,7 @@
   border-color: var(--warm-cta) !important;
   color: var(--text-primary) !important;
   font-family: var(--font-display) !important;
-  font-size: 12px !important;
+  font-size: var(--type-label) !important;
   letter-spacing: 2px;
   padding: 14px var(--space-lg) !important;
   box-shadow:
@@ -1306,7 +1342,7 @@
 /* ── Secondary button (subordinate, e.g. Auto-Place) ─────────── */
 .btn-secondary {
   padding: 10px 20px;
-  font-size: 13px;
+  font-size: var(--type-body);
   font-family: var(--font-body);
   border: var(--panel-border-width) solid var(--surface-edge);
   border-radius: 6px;
@@ -1340,7 +1376,7 @@
   padding: 4px 10px;
   border-radius: 4px;
   background-color: var(--board-bg);
-  font-size: 12px;
+  font-size: var(--type-label);
   font-family: var(--font-body);
   color: var(--text-primary);
   min-height: 28px;
@@ -1379,7 +1415,7 @@
   background-color: var(--panel-fill);
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--type-body);
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
   flex: 1;
@@ -1398,7 +1434,7 @@
 }
 
 .btn-rotate__icon {
-  font-size: 20px;
+  font-size: var(--type-display);
   line-height: 1;
   color: var(--neon-cyan);
 }
@@ -1410,7 +1446,7 @@
 
 .btn-rotate__hint {
   font-family: var(--font-display);
-  font-size: 9px;
+  font-size: var(--type-caption);
   color: var(--side-player);
   border: var(--panel-border-width) solid var(--side-player);
   border-radius: 3px;
@@ -1490,7 +1526,7 @@
     transition: none !important;
   }
 
-  .game-layout {
+  .game-stage {
     transition: none !important;
   }
 
@@ -1513,42 +1549,55 @@
    RESPONSIVE — single column below breakpoint
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 899px) {
-  .game-layout {
+  /* ── Mobile portrait composition ────────────────────────────── */
+  /* Enemy Waters primary full-width, fleet compact below.
+     Header full-width · stacked controls · single-column stage. */
+
+  .game-stage {
     grid-template-areas:
       'header'
-      'player'
-      'enemy';
+      'enemy'
+      'player';
     grid-template-columns: 1fr;
   }
 
   /* Setup phase already single-column via phase rule; ensure no override */
-  .game-layout[data-phase="setup"] {
+  .game-stage[data-phase="setup"] {
     grid-template-columns: 1fr;
+    max-width: var(--stage-single-max);
   }
 
+  /* Enemy Waters: primary, full-width */
+  .zone-enemy {
+    border-right: none;
+    border-left: 3px solid var(--side-enemy);
+    order: 0;
+  }
+
+  .zone-enemy .board-container {
+    max-width: 100%;
+  }
+
+  /* Your Fleet: compact reference below */
   .zone-player {
     border-right: none;
     border-left: 3px solid var(--side-player);
     padding: var(--space-xs);
+    order: 1;
   }
 
-  .zone-enemy {
-    border-right: none;
-    border-left: 3px solid var(--side-enemy);
-  }
-
-  .board-container {
-    max-width: 320px;
+  .zone-player .board-container {
+    max-width: 280px;
   }
 
   /* Mobile logo: stacked, smaller */
   .logo-lockup__battleship {
-    font-size: 18px;
+    font-size: var(--type-title);
     letter-spacing: 3px;
   }
 
   .logo-lockup__benneys {
-    font-size: 9px;
+    font-size: var(--type-caption);
     letter-spacing: 3px;
   }
 
@@ -1583,14 +1632,19 @@
     display: none; /* hide R hint on mobile — it's a touch device */
   }
 
+  /* HUD console: two-row mobile compact */
+  .hud-console {
+    max-width: 100%;
+  }
+
   /* Mobile endgame screen */
   .endgame-screen__title--victory,
-  .endgame-screen__title--defeat { font-size: 20px; letter-spacing: 4px; }
+  .endgame-screen__title--defeat { font-size: var(--type-display); letter-spacing: 4px; }
   .endgame-screen__trophy { margin-bottom: var(--space-sm); }
   .endgame-screen__medals { flex-direction: column; gap: var(--space-sm); align-items: center; }
   .endgame-screen__medal { max-width: 280px; width: 100%; }
   .endgame-screen__cell { width: 32px; height: 32px; }
-  .endgame-screen__coord { width: 20px; font-size: 6px; padding-right: var(--space-xs); }
+  .endgame-screen__coord { width: 20px; font-size: var(--type-caption); padding-right: var(--space-xs); }
   .endgame-screen__coord--col { width: 32px; height: 20px; }
   .endgame-screen__cta { max-width: 280px; }
 }
