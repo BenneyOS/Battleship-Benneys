@@ -1828,14 +1828,13 @@
     max-width: 100%;
   }
 
-  /* Your Fleet: compact reference below */
+  /* Your Fleet: same sizing as Enemy Waters — identical stacked boards */
   .zone-player {
-    padding: var(--space-xs);
     order: 1;
   }
 
   .zone-player .board-container {
-    max-width: 280px;
+    max-width: 100%;
   }
 
   /* Mobile logo: stacked, smaller, ghost-free */
