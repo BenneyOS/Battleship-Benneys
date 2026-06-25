@@ -77,6 +77,9 @@ When testing the HUD console at mobile widths (375px):
    - Visually-hidden pattern (`position: absolute; width: 1px; height: 1px; clip: rect(0,0,0,0)`) — hides visually but keeps in accessibility tree (required for meaningful content like labels)
 4. **Desktop regression**: After mobile testing, switch to 1280px and verify ALL HUD elements are visible. The mobile rules should be scoped inside `@media (max-width: 899px)` — if desktop elements are hidden, the media query scoping is broken.
 5. **Adversarial assertion design**: For each hidden element, verify both that it IS hidden on mobile AND that it is NOT hidden on desktop. This catches media query scoping bugs.
+6. **Use CDP for computed style checks**: Rather than typing commands into the DevTools Console via GUI (which is fragile), use Chrome DevTools Protocol via WebSocket. Install `ws` (`npm install --no-save ws`) and connect to `ws://localhost:29229/devtools/page/<TARGET_ID>`. Get the target ID from `http://localhost:29229/json`. Use `Runtime.evaluate` to run `getComputedStyle()` checks programmatically — this is faster and more reliable than GUI-based DevTools interaction.
+7. **Width math verification**: Measure zone widths via `getBoundingClientRect().width` and sum them. At 375px, available width is ~295-343px depending on padding. Verify `turnZone + accuracyZone + turnsZone + gaps < containerWidth`.
+8. **Confirm PR is actually merged before testing deployed site**: A common failure mode is testing the deployed site when the fix PR hasn't been merged yet. Always verify the PR status before concluding the deployed version is broken.
 
 ### Architecture notes for visual testing
 - `.zone-header` is used in setup and battle phases. The `gameOver` phase bypasses it entirely (uses EndScreen component directly in `.game-stage`).
