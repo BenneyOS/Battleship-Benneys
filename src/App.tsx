@@ -10,7 +10,7 @@ import { AccuracyChip } from './ui/components/AccuracyChip';
 import { MuteButton } from './ui/components/MuteButton';
 import { Celebrate } from './ui/components/Celebrate';
 import { unlockAudio } from './ui/audioContext';
-import { VictoryScreen } from './ui/components/VictoryScreen';
+import { EndScreen } from './ui/components/EndScreen';
 import { LogoHeader } from './ui/components/LogoHeader';
 import { deriveHeaderStatus } from './ui/headerStatus';
 import { deriveCelebrationFromShot, buildCelebration } from './ui/celebrationSystem';
@@ -237,12 +237,12 @@ function App() {
         <div className="atmosphere-texture" aria-hidden="true" />
         <div className="atmosphere-shimmer" aria-hidden="true" />
 
-        <VictoryScreen
+        <EndScreen
+          outcome={isVictory ? 'win' : 'loss'}
           board={isVictory ? state.game.aiBoard : state.game.humanBoard}
           fleetProgress={battleProg}
           accuracy={accuracy}
           lastSunkShipName={lastSunkShip}
-          isVictory={isVictory}
           onNewGame={handleReset}
           enemySunkCount={battleProg.sunk}
         />
