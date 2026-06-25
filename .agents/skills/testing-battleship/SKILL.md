@@ -87,6 +87,81 @@ When testing the HUD console at mobile widths (375px):
 - Intentional panels with bezels: SETUP banner (`.turn-banner`), HUD console (`.hud-console`), board bezels (`.board-bezel`), companion panels.
 - The field gradient is set on `.game-layout` and should flow unbroken edge-to-edge.
 
+## Release QA / Ship Gate Testing
+
+When running a full release QA pass (pre-demo verification):
+
+### Entry Gate Checks
+1. Verify all fix PRs are merged to main (check `git log --oneline -5`)
+2. Start dev server fresh, load in incognito — zero console errors required
+3. Run `npx vitest run` — all tests must pass unchanged before testing begins
+
+### Auto-Fire Script for Game Completion
+Use this CDP script to rapidly fire through all enemy cells and reach game-over:
+```javascript
+// Run via page.evaluate() in Playwright CDP connection
+async function autoFire() {
+  const sections = document.querySelectorAll('section');
+  let enemySection = null;
+  sections.forEach(s => {
+    const h = s.querySelector('h3');
+    if (h && h.textContent.includes('Enemy')) enemySection = s;
+  });
+  if (!enemySection) return 'NO_ENEMY_SECTION';
+  let fired = 0;
+  for (let pass = 0; pass < 5; pass++) {
+    const rows = enemySection.querySelectorAll('table tbody tr');
+    for (let r = 0; r < rows.length; r++) {
+      const cells = rows[r].querySelectorAll('td');
+      for (let c = 1; c < cells.length; c++) {
+        if (document.querySelector('.endgame-screen')) return 'END:' + fired;
+        const cell = cells[c];
+        const cls = cell.className;
+        if (cls.includes('hit') || cls.includes('miss') || cls.includes('sunk')) continue;
+        // Wait for YOUR TURN
+        for (let w = 0; w < 30; w++) {
+          const header = document.querySelector('header');
+          if (header && header.textContent.includes('YOUR TURN')) break;
+          if (document.querySelector('.endgame-screen')) return 'END:' + fired;
+          await new Promise(r => setTimeout(r, 300));
+        }
+        cell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        fired++;
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
+  }
+  return 'EXHAUSTED:' + fired;
+}
+```
+Note: The game outcome (WIN/LOSS) depends on the random AI ship placement and AI firing. You may get DEFEAT instead of VICTORY — retry with a new game if you need a specific outcome.
+
+### R4 Progress Values Verification
+The `BattleScoreboard` uses `fleetProgress()` which computes `Math.round((sunk/total)*100)`. For 5 ships, only 0/20/40/60/80/100% are possible. Track the progress bar's `aria-valuenow` attribute during gameplay to verify live. Milestones fire at sunk counts 3 and 4 only (`SUNK_COUNT_MILESTONES = [3, 4]` in selectors.ts).
+
+### R7 Audio Verification
+AudioContext can be checked programmatically: `new AudioContext().state` returns 'running' after the first user gesture. Actual audible output may not be verifiable in headless-like environments.
+
+### Key CSS Selectors for Regression Checks
+- **R8 (stage invisible)**: `.zone-player`, `.zone-enemy` — check `background`, `border`
+- **R9 (seamless plane)**: `.zone-header` — check `background`, `border-bottom`, `box-shadow`
+- **R3 (board parity)**: `.zone-player .board-container`, `.zone-enemy .board-container` — check `getBoundingClientRect().width` and `max-width`
+- **R2 (stacked header)**: `.hud-console` — check `gridTemplateRows` at mobile widths
+- **R5 (CTA containment)**: `button` containing "Start Battle" — check `getBoundingClientRect().width` vs viewport
+- **R10 (logo crisp)**: Elements with `[class*="logo"]` — check `text-shadow` for offset values (should be 0px 0px)
+- **R11 (panel position)**: `.companion-panel` — check `position` is `static` or `relative`, not `absolute`
+
+### Breakpoints
+- 600px: Mobile header switches to stacked 3-row grid
+- 899px: Mobile media query boundary (max-width: 899px)
+- 900px: Desktop layout kicks in
+
+### Common Pitfalls
+- **Accuracy vs Progress confusion**: The accuracy stat (e.g., 13%, 18%) shows hit rate (hits/total shots) — this is NOT the progress percentage. R4 is about the sunk progress bar only.
+- **Game outcome randomness**: The AI is random, so you may get DEFEAT when trying to reach VICTORY. Multiple attempts may be needed.
+- **Touch placement on mobile**: Ship placement uses single-tap commit (fixed in PR #28). Test by dispatching `MouseEvent('click')` via CDP at mobile viewport.
+- **DevTools emulation vs real device**: Chrome DevTools responsive mode does NOT reproduce touch events, haptics, audio unlock timing, or Safari rendering quirks. Always flag real-device testing as a gap when not available.
+
 ## Tips
 
 - Playing a full game manually takes many clicks (~50-80 shots). Use CDP/Playwright to automate firing shots if you need to reach game over quickly.
@@ -94,6 +169,8 @@ When testing the HUD console at mobile widths (375px):
 - The `vitest.config.ts` is separate from `vite.config.ts` to avoid type conflicts between Vitest 3.x and Vite 8.x.
 - No secrets or authentication needed — the game is fully client-side.
 - Port may auto-increment (e.g. 5173 → 5174) if occupied — always check terminal output for the actual URL.
+- Connect Playwright via CDP at `http://localhost:29229` — use `chromium.connectOverCDP()` to attach to the running Chrome instance.
+- Use `page.evaluate()` for DOM queries and clicks instead of Playwright's `page.click()` — the latter's actionability checks can timeout on game elements.
 
 ## Devin Secrets Needed
 
