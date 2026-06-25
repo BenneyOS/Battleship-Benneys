@@ -118,7 +118,7 @@ describe('Placement preview interaction (§6.2)', () => {
 
     // Leave the board
     const boardWrapper = playerZone.querySelector('.board-bezel');
-    fireEvent.mouseLeave(boardWrapper!);
+    fireEvent.pointerLeave(boardWrapper!);
 
     // Preview should be cleared
     let clearedCount = 0;
@@ -129,38 +129,34 @@ describe('Placement preview interaction (§6.2)', () => {
     expect(clearedCount).toBe(0);
   });
 
-  it('touch: tap-preview then tap-confirm on same anchor commits', () => {
+  it('touch: single tap on valid cell commits immediately', () => {
     Object.defineProperty(window, 'ontouchstart', { value: true, configurable: true });
     render(<App />);
 
     const playerZone = screen.getByTestId('zone-player');
     const cell0_0 = playerZone.querySelector('td[data-coord="0,0"]');
 
-    // First tap — previews only
-    fireEvent.click(cell0_0!);
-    expect(screen.getByText(/0 of 5/)).toBeTruthy();
-
-    // Second tap on same anchor — commits
-    fireEvent.click(cell0_0!);
+    // Single tap on valid cell — commits immediately
+    act(() => {
+      fireEvent.click(cell0_0!);
+    });
     expect(screen.getByText(/1 of 5/)).toBeTruthy();
 
     delete (window as unknown as Record<string, unknown>).ontouchstart;
   });
 
-  it('touch: different cell relocates without committing', () => {
+  it('touch: tap on invalid cell does not commit', () => {
     Object.defineProperty(window, 'ontouchstart', { value: true, configurable: true });
     render(<App />);
 
     const playerZone = screen.getByTestId('zone-player');
-    const cell0_0 = playerZone.querySelector('td[data-coord="0,0"]');
-    const cell0_2 = playerZone.querySelector('td[data-coord="0,2"]');
+    // Cell (8,0) — horizontal ship length 5 goes off-board
+    const cell8_0 = playerZone.querySelector('td[data-coord="8,0"]');
 
-    // First tap at (0,0) — previews
-    fireEvent.click(cell0_0!);
-    expect(screen.getByText(/0 of 5/)).toBeTruthy();
-
-    // Tap different cell (0,2) — relocates preview, does NOT commit
-    fireEvent.click(cell0_2!);
+    // Tap invalid cell — shows feedback but does NOT commit
+    act(() => {
+      fireEvent.click(cell8_0!);
+    });
     expect(screen.getByText(/0 of 5/)).toBeTruthy();
 
     delete (window as unknown as Record<string, unknown>).ontouchstart;
