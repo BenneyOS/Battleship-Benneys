@@ -65,7 +65,7 @@ export function BoardGrid({
   }
 
   return (
-    <div className="board-bezel" onMouseLeave={onBoardLeave}>
+    <div className="board-bezel" onPointerLeave={onBoardLeave}>
       <h3 style={{
         textAlign: 'center',
         color: 'var(--neon-cyan)',

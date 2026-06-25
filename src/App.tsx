@@ -59,7 +59,6 @@ function App() {
 
   // Placement preview state
   const [previewAnchor, setPreviewAnchor] = useState<Coord | null>(null);
-  const [touchAnchor, setTouchAnchor] = useState<Coord | null>(null);
 
   // Fleet-ready beat tracking
   const [fleetReadyFired, setFleetReadyFired] = useState(false);
@@ -165,42 +164,23 @@ function App() {
 
   const handleBoardLeave = useCallback(() => {
     setPreviewAnchor(null);
-    setTouchAnchor(null);
   }, []);
 
   const handleSetupClick = useCallback((coord: Coord) => {
     unlockAudio();
     if (!currentShipLength) return;
 
-    // Touch support: first tap previews, second tap on same anchor commits
-    const isTouchDevice = 'ontouchstart' in window;
-    if (isTouchDevice) {
-      if (touchAnchor && touchAnchor.x === coord.x && touchAnchor.y === coord.y) {
-        // Second tap on same anchor — commit if valid
-        const p = previewPlacement(state.game.humanBoard, coord, currentShipLength, orientation);
-        if (p.isValid) {
-          actions.placeShip({ origin: coord, orientation, length: currentShipLength });
-          setPreviewAnchor(null);
-          setTouchAnchor(null);
-          setCelebrationEvent(buildCelebration('micro', 'PLACED'));
-        }
-      } else {
-        // First tap or different cell — set preview
-        setTouchAnchor(coord);
-        setPreviewAnchor(coord);
-      }
-      return;
-    }
-
-    // Desktop: click commits if valid (preview already showing)
+    // Single code path for both touch and desktop: tap/click commits if legal
     const p = previewPlacement(state.game.humanBoard, coord, currentShipLength, orientation);
     if (p.isValid) {
       actions.placeShip({ origin: coord, orientation, length: currentShipLength });
       setPreviewAnchor(null);
       setCelebrationEvent(buildCelebration('micro', 'PLACED'));
+    } else {
+      // Illegal tap/click: show invalid preview as feedback, no commit
+      setPreviewAnchor(coord);
     }
-    // Invalid click is a no-op
-  }, [currentShipLength, orientation, state.game.humanBoard, actions, touchAnchor]);
+  }, [currentShipLength, orientation, state.game.humanBoard, actions]);
 
   // Start Battle: trigger reveal transition then start playing
   const handleStartBattle = useCallback(() => {
