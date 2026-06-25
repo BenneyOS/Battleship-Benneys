@@ -1364,6 +1364,7 @@
   justify-content: center;
   margin-top: var(--space-sm);
   width: 100%;
+  max-width: 420px; /* match board-container max-width */
 }
 
 /* Rotate button — real tappable control with icon + label + R hint */
@@ -1432,6 +1433,7 @@
 .setup-controls__action {
   margin-top: var(--space-lg);
   width: 100%;
+  max-width: 420px; /* match board-container max-width */
 }
 
 .setup-controls__action .btn-primary {
