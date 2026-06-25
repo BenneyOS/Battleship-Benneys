@@ -173,9 +173,7 @@
   max-width: var(--stage-single-max);
 }
 
-.game-stage[data-phase="setup"] .zone-player {
-  border-right: none;
-}
+/* Zone borders removed — setup phase override no longer needed */
 
 /* ── Game-over layout: single centered column ─────────────────── */
 .game-stage[data-phase="gameOver"] {
@@ -403,9 +401,6 @@
   flex-direction: column;
   align-items: center;
   padding: var(--space-sm);
-  border-right: 1px solid rgba(0, 229, 255, 0.15);
-  border-left: 3px solid var(--side-player);
-  background-color: rgba(41, 182, 246, 0.04);
   position: relative;
   z-index: 1;
 }
@@ -419,8 +414,6 @@
   flex-direction: column;
   align-items: center;
   padding: var(--space-sm);
-  border-right: 3px solid var(--side-enemy);
-  background-color: rgba(239, 83, 80, 0.04);
   position: relative;
   z-index: 1;
 }
@@ -1812,8 +1805,6 @@
 
   /* Enemy Waters: primary, full-width */
   .zone-enemy {
-    border-right: none;
-    border-left: 3px solid var(--side-enemy);
     order: 0;
   }
 
@@ -1823,8 +1814,6 @@
 
   /* Your Fleet: compact reference below */
   .zone-player {
-    border-right: none;
-    border-left: 3px solid var(--side-player);
     padding: var(--space-xs);
     order: 1;
   }
