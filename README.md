@@ -61,7 +61,7 @@ Deployed automatically via GitHub Pages on push to `main`. The GitHub Actions wo
 
 ## How to Play
 
-1. **Setup**: Click cells on "Your Fleet" board to place ships. Press **R** to toggle desktop orientation. Or click "Auto-Place Ships".
+1. **Setup**: Click cells on "Your Fleet" board to place ships. Press **R** to toggle ship orientation (desktop). Or click "Auto-Place Ships".
 2. **Start**: Click "Start Game" once all 5 ships are placed.
 3. **Play**: Click cells on "Enemy Waters" to fire. The AI fires back automatically.
 4. **Win**: Sink all enemy ships before the AI sinks yours.
