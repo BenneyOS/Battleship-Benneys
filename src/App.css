@@ -1639,7 +1639,7 @@
 
   /* Mobile endgame screen */
   .endgame-screen__title--victory,
-  .endgame-screen__title--defeat { font-size: var(--type-display); letter-spacing: 4px; }
+  .endgame-screen__title--defeat { font-size: var(--type-title); letter-spacing: 4px; }
   .endgame-screen__trophy { margin-bottom: var(--space-sm); }
   .endgame-screen__medals { flex-direction: column; gap: var(--space-sm); align-items: center; }
   .endgame-screen__medal { max-width: 280px; width: 100%; }
