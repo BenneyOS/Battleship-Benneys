@@ -30,6 +30,8 @@ export interface CelebrationContext {
   settleDuration: number;
   /** Whether this is cool-toned (defeat/player-hit) */
   coolToned: boolean;
+  /** Haptic vibration pattern (ms), empty = no haptic */
+  hapticPattern: number[];
 }
 
 // ─── Tier → Context mapping ──────────────────────────────────────────────────
@@ -45,6 +47,7 @@ const TIER_CONFIG: Record<CelebrationTier, Omit<CelebrationContext, 'calloutText
     soundDuration: 0,
     settleDuration: 400,
     coolToned: false,
+    hapticPattern: [10],
   },
   sink: {
     intensity: 0.5,
@@ -56,6 +59,7 @@ const TIER_CONFIG: Record<CelebrationTier, Omit<CelebrationContext, 'calloutText
     soundDuration: 350,
     settleDuration: 1200,
     coolToned: false,
+    hapticPattern: [30, 20, 30],
   },
   milestone: {
     intensity: 0.35,
@@ -67,6 +71,7 @@ const TIER_CONFIG: Record<CelebrationTier, Omit<CelebrationContext, 'calloutText
     soundDuration: 300,
     settleDuration: 1000,
     coolToned: false,
+    hapticPattern: [20, 10, 20],
   },
   'phase-complete': {
     intensity: 0.45,
@@ -78,6 +83,7 @@ const TIER_CONFIG: Record<CelebrationTier, Omit<CelebrationContext, 'calloutText
     soundDuration: 400,
     settleDuration: 1200,
     coolToned: false,
+    hapticPattern: [30, 15, 30],
   },
   victory: {
     intensity: 1.0,
@@ -89,6 +95,7 @@ const TIER_CONFIG: Record<CelebrationTier, Omit<CelebrationContext, 'calloutText
     soundDuration: 600,
     settleDuration: 2000,
     coolToned: false,
+    hapticPattern: [50, 30, 50, 30, 100],
   },
   defeat: {
     intensity: 0.3,
@@ -100,6 +107,7 @@ const TIER_CONFIG: Record<CelebrationTier, Omit<CelebrationContext, 'calloutText
     soundDuration: 500,
     settleDuration: 1200,
     coolToned: true,
+    hapticPattern: [40, 60, 40],
   },
 };
 

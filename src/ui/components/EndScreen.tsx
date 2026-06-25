@@ -161,7 +161,7 @@ export function EndScreen({
           {/* Two-medal row — same component, same structure */}
           <div className="endgame-screen__medals">
             {/* Medal 1: Accuracy (always) */}
-            <div className={`endgame-screen__medal endgame-screen__medal--${tone}`} data-testid="endgame-accuracy-medal">
+            <div className={`endgame-screen__medal endgame-screen__medal--${tone}`} data-testid="endgame-accuracy-medal" style={{ '--medal-i': 0 } as React.CSSProperties}>
               <span className="endgame-screen__medal-icon">🎯</span>
               <span className={`endgame-screen__medal-value endgame-screen__medal-value--${tone}`}>{accuracy.percent}%</span>
               <span className="endgame-screen__medal-label">ACCURACY</span>
@@ -169,7 +169,7 @@ export function EndScreen({
 
             {/* Medal 2: outcome-specific stat */}
             {medal2Value && (
-              <div className={`endgame-screen__medal endgame-screen__medal--${tone}`} data-testid={outcome === 'win' ? 'endgame-finalblow-medal' : 'endgame-sunk-medal'}>
+              <div className={`endgame-screen__medal endgame-screen__medal--${tone}`} data-testid={outcome === 'win' ? 'endgame-finalblow-medal' : 'endgame-sunk-medal'} style={{ '--medal-i': 1 } as React.CSSProperties}>
                 <span className="endgame-screen__medal-icon">{cfg.medal2Icon}</span>
                 <span className={`endgame-screen__medal-value endgame-screen__medal-value--${tone}`}>{medal2Value}</span>
                 <span className="endgame-screen__medal-label">{cfg.medal2Label}</span>

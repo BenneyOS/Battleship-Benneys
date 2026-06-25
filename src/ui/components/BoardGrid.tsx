@@ -136,6 +136,7 @@ export function BoardGrid({
                         onCellHover(coord);
                       }
                     }}
+                    className={isClickable ? 'board-cell board-cell--interactive' : 'board-cell'}
                     style={{
                       width: 36,
                       height: 36,
@@ -147,7 +148,6 @@ export function BoardGrid({
                       color: cellState === 'miss' ? 'var(--text-muted)' : 'var(--text-primary)',
                       fontSize: 16,
                       fontWeight: 'bold',
-                      transition: 'background-color 0.15s, box-shadow 0.15s',
                     }}
                   >
                     {CELL_SYMBOLS[cellState]}

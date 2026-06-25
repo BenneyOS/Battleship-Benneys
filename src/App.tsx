@@ -182,6 +182,7 @@ function App() {
           actions.placeShip({ origin: coord, orientation, length: currentShipLength });
           setPreviewAnchor(null);
           setTouchAnchor(null);
+          setCelebrationEvent(buildCelebration('micro', 'PLACED'));
         }
       } else {
         // First tap or different cell — set preview
@@ -196,6 +197,7 @@ function App() {
     if (p.isValid) {
       actions.placeShip({ origin: coord, orientation, length: currentShipLength });
       setPreviewAnchor(null);
+      setCelebrationEvent(buildCelebration('micro', 'PLACED'));
     }
     // Invalid click is a no-op
   }, [currentShipLength, orientation, state.game.humanBoard, actions, touchAnchor]);
@@ -348,6 +350,7 @@ function App() {
                     i < placementIndex ? ' setup-controls__ship-chip--placed' :
                     i === placementIndex ? ' setup-controls__ship-chip--active' : ''
                   }`}
+                  style={{ '--chip-i': i } as React.CSSProperties}
                 >
                   {SHIP_NAMES[i]} ({length})
                   {i < placementIndex ? ' \u2713' : ''}
@@ -389,6 +392,7 @@ function App() {
               onClick={handleStartBattle}
               disabled={!allShipsPlaced}
               className="btn-primary btn-start-game"
+              data-ready={allShipsPlaced ? 'true' : undefined}
             >
               Start Battle
             </button>

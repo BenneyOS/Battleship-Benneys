@@ -63,6 +63,11 @@ export function Celebrate({ event, muted, animationMs }: CelebrateProps) {
       playCelebrationSound(context.soundFreq, context.soundDuration, context.coolToned);
     }
 
+    // Haptic (gated by navigator.vibrate availability — no-haptic fallback = no-op)
+    if (context.hapticPattern.length > 0 && typeof navigator !== 'undefined' && navigator.vibrate) {
+      try { navigator.vibrate(context.hapticPattern); } catch { /* no-op on unsupported devices */ }
+    }
+
     // Phase sequence: burst → callout → glow → settle → idle
     setPhase('burst');
     const t1 = setTimeout(() => setPhase('callout'), duration);
