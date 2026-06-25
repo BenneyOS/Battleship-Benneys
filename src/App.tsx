@@ -232,20 +232,22 @@ function App() {
   // --- Victory/Defeat screen ---
   if (isGameOver) {
     return (
-      <div className="game-layout" data-phase="gameOver" onClick={handleLayoutClick}>
+      <div className="game-layout" onClick={handleLayoutClick}>
         {/* Atmosphere layers */}
         <div className="atmosphere-texture" aria-hidden="true" />
         <div className="atmosphere-shimmer" aria-hidden="true" />
 
-        <EndScreen
-          outcome={isVictory ? 'win' : 'loss'}
-          board={isVictory ? state.game.aiBoard : state.game.humanBoard}
-          fleetProgress={battleProg}
-          accuracy={accuracy}
-          lastSunkShipName={lastSunkShip}
-          onNewGame={handleReset}
-          enemySunkCount={battleProg.sunk}
-        />
+        <div className="game-stage" data-phase="gameOver">
+          <EndScreen
+            outcome={isVictory ? 'win' : 'loss'}
+            board={isVictory ? state.game.aiBoard : state.game.humanBoard}
+            fleetProgress={battleProg}
+            accuracy={accuracy}
+            lastSunkShipName={lastSunkShip}
+            onNewGame={handleReset}
+            enemySunkCount={battleProg.sunk}
+          />
+        </div>
 
         {/* Mute control */}
         <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 200 }}>
@@ -259,11 +261,12 @@ function App() {
   }
 
   return (
-    <div className="game-layout" data-phase={state.game.phase} onClick={handleLayoutClick}>
+    <div className="game-layout" onClick={handleLayoutClick}>
       {/* Atmosphere layers */}
       <div className="atmosphere-texture" aria-hidden="true" />
       <div className="atmosphere-shimmer" aria-hidden="true" />
 
+      <div className="game-stage" data-phase={state.game.phase}>
       {/* ===== CENTRAL HEADER BAR ===== */}
       <header className="zone-header" data-testid="zone-header">
         {/* CSS/HTML Logo — no raster image */}
@@ -444,7 +447,7 @@ function App() {
 
       {/* Legend — below the grid zones */}
       {isPlaying && (
-        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '12px 0', gap: 16, fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--text-muted)', position: 'relative', zIndex: 1 }}>
+        <div className="game-legend" style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '12px 0', gap: 16, fontFamily: 'var(--font-body)', fontSize: 'var(--type-label)', color: 'var(--text-muted)', position: 'relative', zIndex: 1 }}>
           <span>
             <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-miss)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)' }} />
             Miss
@@ -455,12 +458,13 @@ function App() {
           </span>
           <span>
             <span style={{ display: 'inline-block', width: 14, height: 14, backgroundColor: 'var(--state-sunk)', verticalAlign: 'middle', marginRight: 4, border: '1px solid var(--surface-edge)', boxShadow: '0 0 6px var(--state-sunk)' }}>
-              <span style={{ fontSize: 10, lineHeight: '14px', display: 'block', textAlign: 'center' }}>☠</span>
+              <span style={{ fontSize: 'var(--type-caption)', lineHeight: '14px', display: 'block', textAlign: 'center' }}>☠</span>
             </span>
             Sunk
           </span>
         </div>
       )}
+      </div>{/* end .game-stage */}
 
       {/* Celebration overlay — ONE shared component for ALL tiers */}
       <Celebrate event={celebrationEvent} muted={muted} />

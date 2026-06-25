@@ -75,7 +75,7 @@ describe('§5.2 Responsive tests', () => {
 
   it('DOM reading order is header -> player during setup (enemy absent)', () => {
     render(<App />);
-    const layout = document.querySelector('.game-layout');
+    const layout = document.querySelector('.game-stage');
     const children = Array.from(layout!.children);
     const zoneOrder = children
       .filter((el) => el.hasAttribute('data-testid'))
@@ -87,7 +87,7 @@ describe('§5.2 Responsive tests', () => {
 
   it('DOM reading order is header -> player -> enemy during play', () => {
     startGame();
-    const layout = document.querySelector('.game-layout');
+    const layout = document.querySelector('.game-stage');
     const children = Array.from(layout!.children);
     const zoneOrder = children
       .filter((el) => el.hasAttribute('data-testid'))
